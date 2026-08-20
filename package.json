@@ -1,0 +1,14 @@
+{
+  "name": "persone-affiliate-importer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import:affiliate": "node scripts/extract-affiliate.js",
+    "import:affiliate:data-api": "node scripts/import-affiliate-data-api.js",
+    "check": "node --check scripts/extract-affiliate.js && node --check scripts/import-affiliate-data-api.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "sax": "^1.4.1"
+  }
+}
