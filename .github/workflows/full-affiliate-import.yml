@@ -2,6 +2,7 @@ name: Full affiliate feed import
 
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches:
       - main
