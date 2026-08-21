@@ -1,0 +1,23 @@
+name: Persone Full AliExpress Import
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ops/persone_full_import.py'
+      - '.github/workflows/persone-full-import.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: persone-full-aliexpress-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run full streaming import
+        run: python3 ops/persone_full_import.py
