@@ -6,6 +6,12 @@ on:
     paths:
       - 'ops/persone_full_import.py'
       - '.github/workflows/persone-full-import.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ops/persone_full_import.py'
+      - 'ops/persone-import-trigger.txt'
+      - '.github/workflows/persone-full-import.yml'
   workflow_dispatch:
 
 concurrency:
