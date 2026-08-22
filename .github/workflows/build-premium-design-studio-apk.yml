@@ -30,13 +30,33 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Install Android SDK 35
+        id: sdk
+        continue-on-error: true
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+          set -o pipefail
+          { yes | sdkmanager --licenses >/dev/null || true; sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'; } 2>&1 | tee sdk-install.log
 
       - name: Build debug APK
+        id: build
+        continue-on-error: true
         working-directory: android-premium-studio
-        run: gradle --no-daemon :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace :app:assembleDebug 2>&1 | tee ../android-build.log
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PremiumDesignStudio-BuildLogs
+          path: |
+            sdk-install.log
+            android-build.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify APK exists
+        run: test -f android-premium-studio/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Prepare artifact
         run: |
