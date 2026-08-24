@@ -15,7 +15,7 @@
   const POOL = 5;
   const CELL = 148;
   const GAP = 8;
-  const SYMBOL_SIZE = 112;
+  const SYMBOL_SIZE = 124;
   const GRID_W = REELS * CELL + (REELS - 1) * GAP;
   const GRID_H = ROWS * CELL + (ROWS - 1) * GAP;
   const GRID_X = (VIEW_W - GRID_W) / 2;
@@ -127,7 +127,7 @@
 
       for(let i=0;i<POOL;i++){
         const key=randomSymbol(), sy=y+(i-1)*(CELL+GAP)+CELL/2;
-        const shadow=scene.add.ellipse(x+CELL/2,sy+41,82,20,0x000000,.34).setDepth(2).setMask(this.mask);
+        const shadow=null;
         const s=scene.add.image(x+CELL/2,sy,'symbols',FRAME[key]).setDepth(3);
         s.setDisplaySize(SYMBOL_SIZE,SYMBOL_SIZE); s.setMask(this.mask); s.setData('key',key); s.setData('shadow',shadow);
         s.setData('baseScaleX',s.scaleX); s.setData('baseScaleY',s.scaleY); this.sprites.push(s);
@@ -189,13 +189,13 @@
     }
     buildScene(){
       const g=this.add.graphics();
-      g.fillGradientStyle(0x26142d,0x26142d,0x060508,0x060508,1);g.fillRoundedRect(10,10,VIEW_W-20,VIEW_H-20,26);
-      g.lineStyle(4,0x8c5b1e,.96);g.strokeRoundedRect(10,10,VIEW_W-20,VIEW_H-20,26);g.lineStyle(2,0xe2b958,.52);g.strokeRoundedRect(18,18,VIEW_W-36,VIEW_H-36,22);
+      g.fillGradientStyle(0x24132d,0x24132d,0x050407,0x050407,1);g.fillRoundedRect(6,6,VIEW_W-12,VIEW_H-12,22);
+      g.lineStyle(1,0xe0b65a,.24);g.strokeRoundedRect(8,8,VIEW_W-16,VIEW_H-16,20);
       const vault=this.add.graphics().setDepth(0);vault.lineStyle(2,0xc18a37,.08);vault.strokeCircle(VIEW_W/2,VIEW_H/2+28,530);vault.strokeCircle(VIEW_W/2,VIEW_H/2+28,600);vault.lineStyle(1,0xffffff,.025);for(let a=0;a<12;a++){const r=P.Math.DegToRad(a*30);vault.lineBetween(VIEW_W/2+Math.cos(r)*245,VIEW_H/2+28+Math.sin(r)*245,VIEW_W/2+Math.cos(r)*300,VIEW_H/2+28+Math.sin(r)*300);}
       const beam=this.add.graphics().setDepth(0).setBlendMode(P.BlendModes.ADD);beam.fillStyle(0xffd987,.035);beam.fillTriangle(110,0,390,0,560,590);beam.fillTriangle(790,0,510,0,340,590);
       this.add.text(VIEW_W/2,48,'♛  ROYAL ARC  ♛',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffe49a',stroke:'#2a1307',strokeThickness:5,shadow:{offsetX:0,offsetY:2,color:'#000000',blur:6,fill:true}}).setOrigin(.5);
       this.add.text(VIEW_W/2,88,'THE CROWN VAULT',{fontFamily:'Arial,sans-serif',fontSize:'13px',fontStyle:'bold',color:'#c9a96c',letterSpacing:5}).setOrigin(.5);
-      const plate=this.add.graphics().setDepth(0);plate.fillStyle(0x030304,.97);plate.fillRoundedRect(GRID_X-18,GRID_Y-18,GRID_W+36,GRID_H+36,20);plate.lineStyle(6,0x6f4517,.95);plate.strokeRoundedRect(GRID_X-18,GRID_Y-18,GRID_W+36,GRID_H+36,20);plate.lineStyle(2,0xf0c96c,.6);plate.strokeRoundedRect(GRID_X-9,GRID_Y-9,GRID_W+18,GRID_H+18,14);
+      const plate=this.add.graphics().setDepth(0);plate.fillStyle(0x030304,.97);plate.fillRoundedRect(GRID_X-18,GRID_Y-18,GRID_W+36,GRID_H+36,20);plate.lineStyle(2,0xb77a2d,.72);plate.strokeRoundedRect(GRID_X-16,GRID_Y-16,GRID_W+32,GRID_H+32,18);plate.lineStyle(1,0xf0c96c,.34);plate.strokeRoundedRect(GRID_X-7,GRID_Y-7,GRID_W+14,GRID_H+14,12);
       const div=this.add.graphics().setDepth(5);div.lineStyle(1,0xe8bd60,.24);for(let r=1;r<ROWS;r++){const y=GRID_Y+r*CELL+(r-.5)*GAP;div.lineBetween(GRID_X+4,y,GRID_X+GRID_W-4,y);}for(let c=1;c<REELS;c++){const x=GRID_X+c*CELL+(c-.5)*GAP;div.lineBetween(x,GRID_Y+5,x,GRID_Y+GRID_H-5);}
       this.add.text(VIEW_W/2,642,'WILD  •  SCATTER  •  FREE SPINS',{fontFamily:'Arial,sans-serif',fontSize:'11px',color:'#a98a5e',letterSpacing:4}).setOrigin(.5);
     }
