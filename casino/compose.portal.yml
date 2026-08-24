@@ -1,0 +1,22 @@
+services:
+  portal:
+    build:
+      context: ../portal
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${PORTAL_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SITE_NAME: ${SITE_NAME:-CrashX}
+        NEXT_PUBLIC_SITE_TAGLINE: ${SITE_TAGLINE:-Premium casino platform}
+        NEXT_PUBLIC_SITE_DESCRIPTION: ${SITE_DESCRIPTION:-Casino player portal}
+        NEXT_PUBLIC_SUPPORT_EMAIL: ${SUPPORT_EMAIL:-support@example.com}
+        NEXT_PUBLIC_API_URL: http://laravel.test
+        NEXT_PUBLIC_TENANT_SLUG: ${TENANT_SLUG:-crashx}
+        NEXT_PUBLIC_REALTIME_ENABLED: 'false'
+        NEXT_PUBLIC_CRASH_REAL_MONEY: 'false'
+    depends_on:
+      laravel.test:
+        condition: service_started
+    ports:
+      - '${PORTAL_PORT:-3000}:3000'
+    networks:
+      - sail
