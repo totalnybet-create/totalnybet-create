@@ -210,7 +210,7 @@
       this.time.addEvent({delay:lowPower?360:240,loop:true,callback:()=>{if(Math.random()>.48)return;const x=P.Math.Between(30,VIEW_W-30),y=P.Math.Between(35,VIEW_H-35);const dot=this.add.circle(x,y,P.Math.Between(1,2),Math.random()>.25?0xf4cb72:0xd6a5ff,.48).setDepth(25).setBlendMode(P.BlendModes.ADD);this.tweens.add({targets:dot,y:y-P.Math.Between(18,46),x:x+P.Math.Between(-12,12),alpha:0,scale:.15,duration:P.Math.Between(650,1150),ease:'Sine.Out',onComplete:()=>dot.destroy()});}});
     }
     update(_t,delta){for(const r of this.reels)r.update(delta);}
-    wait(ms){return new Promise((resolve)=>this.time.delayedCall(ms,resolve));}
+    wait(ms){return new Promise((resolve)=>window.setTimeout(resolve,ms));}
     clearWin(){
       this.payline.clear();ui.winBanner.classList.remove('show');delete document.body.dataset.winTier;
       for(const s of this.winSprites){if(!s?.active)continue;this.tweens.killTweensOf(s);s.clearTint();const bx=s.getData('baseScaleX'),by=s.getData('baseScaleY');s.setScale(bx,by);}this.winSprites=[];
@@ -253,7 +253,7 @@
       await this.wait(stopTime+55);this.tweens.add({targets:this.cameras.main,zoom:1,duration:160,ease:'Back.Out'});
       const result=evaluate(matrix,state.bet);state.win=Number(result.total.toFixed(2));state.balance+=state.win;state.freeSpins+=result.awardedFreeSpins;syncUi();
       if(result.wins.length)this.showWin(result);else ui.status.textContent=state.freeSpins>0?'BONUS GOTOWY':'SPRÓBUJ PONOWNIE';
-      state.spinning=false;syncUi();if(free&&state.freeSpins>0)this.time.delayedCall(state.turbo?320:760,()=>this.spin());
+      state.spinning=false;syncUi();if(free&&state.freeSpins>0)window.setTimeout(()=>this.spin(),state.turbo?320:760);
     }
     showWin(result){
       const unique=new Map();for(const w of result.wins)for(const c of w.cells)unique.set(`${c.reel}:${c.row}`,c);
