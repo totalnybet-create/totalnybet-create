@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "casino-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "containers": [
+    {
+      "class_name": "CasinoApi",
+      "image": "./Dockerfile",
+      "max_instances": 3,
+      "instance_type": "basic",
+      "constraints": { "regions": ["WEUR", "EEUR"] }
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "CASINO_API", "class_name": "CasinoApi" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["CasinoApi"] }
+  ],
+  "vars": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "DEFAULT_TENANT_SLUG": "crashx",
+    "ADMIN_PANEL_PATH": "operator-console"
+  }
+}
