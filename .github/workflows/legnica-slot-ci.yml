@@ -7,6 +7,12 @@ on:
     paths:
       - 'casino/legnica/**'
       - '.github/workflows/legnica-slot-ci.yml'
+  pull_request:
+    branches:
+      - royal-arc-casino
+    paths:
+      - 'casino/legnica/**'
+      - '.github/workflows/legnica-slot-ci.yml'
   workflow_dispatch:
 
 permissions:
