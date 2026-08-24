@@ -1,0 +1,56 @@
+name: Legnica Slot PR Check
+
+on:
+  pull_request:
+    branches:
+      - royal-arc-casino
+    paths:
+      - 'casino/legnica/**'
+      - '.github/workflows/legnica-slot-ci.yml'
+      - '.github/workflows/legnica-slot-pr.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-legnica-slot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR merge
+        uses: actions/checkout@v4
+
+      - name: Validate source
+        run: |
+          test -f casino/legnica/index.html
+          grep -q '<!doctype html>' casino/legnica/index.html
+          grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
+          grep -q 'id="reels"' casino/legnica/index.html
+          grep -q 'function spin()' casino/legnica/index.html
+
+      - name: Parse HTML and extract JS
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+          data = Path('casino/legnica/index.html').read_text(encoding='utf-8')
+          class Parser(HTMLParser): pass
+          Parser().feed(data)
+          assert '<html' in data.lower() and '</html>' in data.lower()
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', data, flags=re.S|re.I)
+          assert scripts
+          Path('/tmp/legnica-slot.js').write_text('\n'.join(scripts), encoding='utf-8')
+          print('HTML OK; JS extracted')
+          PY
+          node --check /tmp/legnica-slot.js
+
+      - name: Static smoke test
+        run: |
+          python -m http.server 4173 --directory casino/legnica >/tmp/http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          for i in {1..15}; do curl -fsS http://127.0.0.1:4173/ >/tmp/page.html && break || sleep 1; done
+          grep -q 'BRAMA PIASTÓW' /tmp/page.html
+          grep -q 'spinBtn' /tmp/page.html
+          grep -q 'bonusFill' /tmp/page.html
