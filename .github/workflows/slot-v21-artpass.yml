@@ -1,0 +1,93 @@
+name: Royal Arc V2.1 Art Pass
+
+on:
+  push:
+    branches:
+      - royal-arc-v2-premium
+    paths:
+      - '.github/workflows/slot-v21-artpass.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  art-pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: royal-arc-v2-premium
+
+      - name: Install image tooling
+        run: python3 -m pip install --quiet pillow
+
+      - name: Remove edge-connected black symbol backgrounds
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from collections import deque
+          from PIL import Image, ImageEnhance
+
+          path = Path('casino/assets/symbols/symbols-atlas.webp')
+          im = Image.open(path).convert('RGBA')
+          frame = 128
+          cols = im.width // frame
+          rows = im.height // frame
+          px = im.load()
+
+          def bg(x, y):
+              r,g,b,a = px[x,y]
+              return a > 0 and max(r,g,b) <= 30 and abs(r-g) <= 10 and abs(g-b) <= 10
+
+          for fy in range(rows):
+              for fx in range(cols):
+                  x0,y0=fx*frame,fy*frame
+                  x1,y1=min(x0+frame,im.width),min(y0+frame,im.height)
+                  q=deque(); seen=set()
+                  for x in range(x0,x1):
+                      for y in (y0,y1-1):
+                          if bg(x,y): q.append((x,y)); seen.add((x,y))
+                  for y in range(y0,y1):
+                      for x in (x0,x1-1):
+                          if bg(x,y) and (x,y) not in seen: q.append((x,y)); seen.add((x,y))
+                  while q:
+                      x,y=q.popleft(); r,g,b,a=px[x,y]
+                      px[x,y]=(r,g,b,0)
+                      for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
+                          if x0<=nx<x1 and y0<=ny<y1 and (nx,ny) not in seen and bg(nx,ny):
+                              seen.add((nx,ny)); q.append((nx,ny))
+
+          rgb = Image.new('RGBA', im.size, (0,0,0,0))
+          rgb.alpha_composite(im)
+          rgb.save(path, 'WEBP', lossless=True, method=6)
+          print('atlas', im.size, path.stat().st_size)
+          PY
+
+      - name: Simplify symbol rendering and enlarge art
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('casino/slot.js')
+          s=p.read_text()
+          swaps={
+            'const SYMBOL_SIZE = 112;':'const SYMBOL_SIZE = 124;',
+            "const shadow=scene.add.ellipse(x+CELL/2,sy+41,82,20,0x000000,.34).setDepth(2).setMask(this.mask);":"const shadow=null;",
+            "g.fillGradientStyle(0x26142d,0x26142d,0x060508,0x060508,1);g.fillRoundedRect(10,10,VIEW_W-20,VIEW_H-20,26);\n      g.lineStyle(4,0x8c5b1e,.96);g.strokeRoundedRect(10,10,VIEW_W-20,VIEW_H-20,26);g.lineStyle(2,0xe2b958,.52);g.strokeRoundedRect(18,18,VIEW_W-36,VIEW_H-36,22);":"g.fillGradientStyle(0x24132d,0x24132d,0x050407,0x050407,1);g.fillRoundedRect(6,6,VIEW_W-12,VIEW_H-12,22);\n      g.lineStyle(1,0xe0b65a,.24);g.strokeRoundedRect(8,8,VIEW_W-16,VIEW_H-16,20);",
+            "plate.lineStyle(6,0x6f4517,.95);plate.strokeRoundedRect(GRID_X-18,GRID_Y-18,GRID_W+36,GRID_H+36,20);plate.lineStyle(2,0xf0c96c,.6);plate.strokeRoundedRect(GRID_X-9,GRID_Y-9,GRID_W+18,GRID_H+18,14);":"plate.lineStyle(2,0xb77a2d,.72);plate.strokeRoundedRect(GRID_X-16,GRID_Y-16,GRID_W+32,GRID_H+32,18);plate.lineStyle(1,0xf0c96c,.34);plate.strokeRoundedRect(GRID_X-7,GRID_Y-7,GRID_W+14,GRID_H+14,12);"
+          }
+          for old,new in swaps.items():
+              if old not in s: raise SystemExit('missing anchor: '+old[:80])
+              s=s.replace(old,new)
+          p.write_text(s)
+          PY
+
+      - name: Commit V2.1 art pass
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add casino/assets/symbols/symbols-atlas.webp casino/slot.js
+          git commit -m 'art: transparent symbols and cleaner premium playfield'
+          git push origin HEAD:royal-arc-v2-premium
