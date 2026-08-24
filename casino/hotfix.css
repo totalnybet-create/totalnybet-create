@@ -37,3 +37,7 @@ body[data-win-tier="big"] .machine-shell{box-shadow:0 24px 70px rgba(0,0,0,.58),
 }
 @media(max-width:390px){.canvas-host{width:114%;margin-left:-7%;margin-right:-7%}.control-deck{min-height:64px}.spin-button{width:52px;height:52px}.top-hud{min-height:41px}}
 @media(prefers-reduced-motion:reduce){.spin-button:not([disabled]){animation:none!important}}
+
+html.portrait-mobile .machine-shell::before{display:none}
+html.portrait-mobile .canvas-host{width:114%;max-width:none;height:auto;max-height:100%;aspect-ratio:900/1450;margin-left:-7%;margin-right:-7%;align-self:center;border-radius:10px}
+html.portrait-mobile .canvas-host::after{box-shadow:inset 0 0 32px rgba(0,0,0,.5)}

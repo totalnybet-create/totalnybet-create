@@ -9,7 +9,9 @@
   }
 
   const VIEW_W = 900;
-  const VIEW_H = 700;
+  const portraitMobile = window.matchMedia('(max-width: 560px) and (orientation: portrait)').matches;
+  document.documentElement.classList.toggle('portrait-mobile', portraitMobile);
+  const VIEW_H = portraitMobile ? 1450 : 700;
   const REELS = 5;
   const ROWS = 3;
   const POOL = 5;
@@ -192,12 +194,20 @@
       g.fillGradientStyle(0x24132d,0x24132d,0x050407,0x050407,1);g.fillRoundedRect(6,6,VIEW_W-12,VIEW_H-12,22);
       g.lineStyle(1,0xe0b65a,.24);g.strokeRoundedRect(8,8,VIEW_W-16,VIEW_H-16,20);
       const vault=this.add.graphics().setDepth(0);vault.lineStyle(2,0xc18a37,.08);vault.strokeCircle(VIEW_W/2,VIEW_H/2+28,530);vault.strokeCircle(VIEW_W/2,VIEW_H/2+28,600);vault.lineStyle(1,0xffffff,.025);for(let a=0;a<12;a++){const r=P.Math.DegToRad(a*30);vault.lineBetween(VIEW_W/2+Math.cos(r)*245,VIEW_H/2+28+Math.sin(r)*245,VIEW_W/2+Math.cos(r)*300,VIEW_H/2+28+Math.sin(r)*300);}
-      const beam=this.add.graphics().setDepth(0).setBlendMode(P.BlendModes.ADD);beam.fillStyle(0xffd987,.035);beam.fillTriangle(110,0,390,0,560,590);beam.fillTriangle(790,0,510,0,340,590);
+      const beam=this.add.graphics().setDepth(0).setBlendMode(P.BlendModes.ADD);beam.fillStyle(0xffd987,.035);beam.fillTriangle(110,0,390,0,560,VIEW_H-100);beam.fillTriangle(790,0,510,0,340,VIEW_H-100);
       this.add.text(VIEW_W/2,48,'♛  ROYAL ARC  ♛',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffe49a',stroke:'#2a1307',strokeThickness:5,shadow:{offsetX:0,offsetY:2,color:'#000000',blur:6,fill:true}}).setOrigin(.5);
       this.add.text(VIEW_W/2,88,'THE CROWN VAULT',{fontFamily:'Arial,sans-serif',fontSize:'13px',fontStyle:'bold',color:'#c9a96c',letterSpacing:5}).setOrigin(.5);
       const plate=this.add.graphics().setDepth(0);plate.fillStyle(0x030304,.97);plate.fillRoundedRect(GRID_X-18,GRID_Y-18,GRID_W+36,GRID_H+36,20);plate.lineStyle(2,0xb77a2d,.72);plate.strokeRoundedRect(GRID_X-16,GRID_Y-16,GRID_W+32,GRID_H+32,18);plate.lineStyle(1,0xf0c96c,.34);plate.strokeRoundedRect(GRID_X-7,GRID_Y-7,GRID_W+14,GRID_H+14,12);
       const div=this.add.graphics().setDepth(5);div.lineStyle(1,0xe8bd60,.24);for(let r=1;r<ROWS;r++){const y=GRID_Y+r*CELL+(r-.5)*GAP;div.lineBetween(GRID_X+4,y,GRID_X+GRID_W-4,y);}for(let c=1;c<REELS;c++){const x=GRID_X+c*CELL+(c-.5)*GAP;div.lineBetween(x,GRID_Y+5,x,GRID_Y+GRID_H-5);}
-      this.add.text(VIEW_W/2,642,'WILD  •  SCATTER  •  FREE SPINS',{fontFamily:'Arial,sans-serif',fontSize:'11px',color:'#a98a5e',letterSpacing:4}).setOrigin(.5);
+      this.add.text(VIEW_W/2,portraitMobile?640:642,'WILD  •  SCATTER  •  FREE SPINS',{fontFamily:'Arial,sans-serif',fontSize:'11px',color:'#a98a5e',letterSpacing:4}).setOrigin(.5);
+      if(portraitMobile){
+        const lower=this.add.graphics().setDepth(0);
+        lower.lineStyle(2,0xe4b75a,.08);lower.strokeCircle(VIEW_W/2,1010,360);lower.strokeCircle(VIEW_W/2,1010,285);lower.strokeCircle(VIEW_W/2,1010,210);lower.lineStyle(1,0xffffff,.025);
+        for(let a=0;a<16;a++){const r=P.Math.DegToRad(a*22.5);lower.lineBetween(VIEW_W/2+Math.cos(r)*212,1010+Math.sin(r)*212,VIEW_W/2+Math.cos(r)*354,1010+Math.sin(r)*354);}
+        this.add.text(VIEW_W/2,980,'♛',{fontFamily:'Georgia,serif',fontSize:'220px',color:'#dcb45c',stroke:'#3a1a08',strokeThickness:3}).setOrigin(.5).setAlpha(.055);
+        this.add.text(VIEW_W/2,1190,'THE CROWN VAULT',{fontFamily:'Georgia,serif',fontSize:'24px',color:'#c49b50',letterSpacing:7}).setOrigin(.5).setAlpha(.22);
+        this.add.text(VIEW_W/2,1240,'FORTUNE  •  POWER  •  LEGACY',{fontFamily:'Arial,sans-serif',fontSize:'10px',color:'#9b7e53',letterSpacing:5}).setOrigin(.5).setAlpha(.28);
+      }
     }
     buildReels(){for(let i=0;i<REELS;i++)this.reels.push(new Reel(this,i,GRID_X+i*(CELL+GAP),GRID_Y));}
     buildPremiumFx(){
