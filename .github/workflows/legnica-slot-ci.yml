@@ -25,17 +25,20 @@ concurrency:
 jobs:
   validate-and-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate required source
+      - name: Validate required PRO V2 source
         run: |
           test -f casino/legnica/index.html
           grep -q '<!doctype html>' casino/legnica/index.html
           grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
           grep -q 'id="reels"' casino/legnica/index.html
+          grep -q 'id="spin"' casino/legnica/index.html
+          grep -q 'featureRail' casino/legnica/index.html
+          grep -q 'Klucze do Bramy' casino/legnica/index.html
           grep -q 'function spin()' casino/legnica/index.html
 
       - name: Validate HTML parse
@@ -45,14 +48,14 @@ jobs:
           from pathlib import Path
           p = Path('casino/legnica/index.html')
           data = p.read_text(encoding='utf-8')
-          class Parser(HTMLParser):
-              pass
+          class Parser(HTMLParser): pass
           Parser().feed(data)
           assert '<html' in data.lower() and '</html>' in data.lower()
           assert '<script' in data.lower() and '</script>' in data.lower()
           assert data.count('class="tower') >= 2
           assert 'grid-template-columns:repeat(5,1fr)' in data
-          print('Legnica HTML parse OK')
+          assert 'prefers-reduced-motion' in data
+          print('Legnica PRO V2 HTML parse OK')
           PY
 
       - name: Validate embedded JavaScript syntax
@@ -64,24 +67,23 @@ jobs:
           scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, flags=re.S|re.I)
           assert scripts, 'No embedded script found'
           Path('/tmp/legnica-slot.js').write_text('\n'.join(scripts), encoding='utf-8')
-          print('Extracted embedded JS')
+          print('Embedded JS extracted')
           PY
           node --check /tmp/legnica-slot.js
 
-      - name: Smoke-test static delivery
+      - name: Static delivery smoke
         run: |
           python -m http.server 4173 --directory casino/legnica >/tmp/legnica-slot-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
-          for i in {1..15}; do
-            if curl -fsS http://127.0.0.1:4173/ >/tmp/legnica-slot.html; then
-              break
-            fi
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:4173/ >/tmp/legnica-slot.html; then break; fi
             sleep 1
           done
           grep -q 'BRAMA PIASTÓW' /tmp/legnica-slot.html
-          grep -q 'bonusFill' /tmp/legnica-slot.html
-          grep -q 'spinBtn' /tmp/legnica-slot.html
+          grep -q 'id="spin"' /tmp/legnica-slot.html
+          grep -q 'id="reels"' /tmp/legnica-slot.html
+          grep -q 'KRÓLEWSKI JACKPOT' /tmp/legnica-slot.html
 
       - name: Package validated slot
         run: |
