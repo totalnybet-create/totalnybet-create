@@ -2,7 +2,7 @@
 
 Produkcyjny vertical slice slota 5×3 rozwijany w kierunku premium-provider presentation.
 
-## Zakres v2.1 premium
+## Zakres v2.2 premium
 - Phaser 3 / WebGL
 - 5×3, 10 linii
 - reel pooling bez tworzenia sprite'ów podczas spinu
@@ -13,10 +13,11 @@ Produkcyjny vertical slice slota 5×3 rozwijany w kierunku premium-provider pres
 - count-up wygranej i burst particles
 - WILD, Scatter i Free Spins
 - high-volatility paytable prototype
-- uproszczony współczesny cabinet + większe pole gry na mobile
+- uproszczony współczesny cabinet
 - transparentne tła symboli usuwane edge-floodem bez niszczenia ciemnych detali symbolu
 - powiększone symbole i zmniejszona liczba obiektów renderera
-- mobile vault ambience wypełniający przestrzeń pod polem gry bez ciężkich filtrów CSS
+- pełna pionowa scena WebGL 900×1450 na telefonie z geometrią skarbca zamiast pustego dolnego panelu
+- desktop pozostaje w układzie 900×700
 - responsive portrait + landscape
 - gameplay timing odseparowany od render loop, żeby spin domykał się także przy spadkach FPS
 
