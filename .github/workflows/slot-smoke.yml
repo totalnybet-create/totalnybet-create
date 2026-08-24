@@ -1,17 +1,9 @@
 name: Royal Arc Slot Smoke
 
 on:
-  push:
-    branches:
-      - royal-arc-slot-v1
-    paths:
-      - 'casino/**'
-      - 'index.html'
-      - '.github/scripts/slot-smoke.mjs'
-      - '.github/workflows/slot-smoke.yml'
   pull_request:
     branches:
-      - royal-arc-casino
+      - royal-arc-qa-base
     paths:
       - 'casino/**'
       - 'index.html'
