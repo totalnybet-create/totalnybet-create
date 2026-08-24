@@ -1,0 +1,84 @@
+name: Termux Bridge
+
+on:
+  push:
+    branches:
+      - casino-turnkey-base
+    paths:
+      - '.termux-command/task.txt'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Allowed task: status, sync, build, test'
+        required: true
+        default: 'status'
+
+concurrency:
+  group: termux-bridge
+  cancel-in-progress: false
+
+jobs:
+  termux:
+    runs-on: [self-hosted, linux, arm64, termux]
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout casino branch
+        uses: actions/checkout@v4
+        with:
+          ref: casino-turnkey-base
+          fetch-depth: 1
+
+      - name: Resolve requested task
+        id: task
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TASK='${{ inputs.task }}'
+          else
+            TASK="$(tr -d '\r\n ' < .termux-command/task.txt)"
+          fi
+          case "$TASK" in
+            status|sync|build|test) ;;
+            *) echo "Unsupported task: $TASK" >&2; exit 64 ;;
+          esac
+          echo "task=$TASK" >> "$GITHUB_OUTPUT"
+
+      - name: Status
+        if: steps.task.outputs.task == 'status'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "TERMUX_RUNNER_ONLINE"
+          uname -a
+          node --version || true
+          npm --version || true
+          git --version
+          pwd
+
+      - name: Sync
+        if: steps.task.outputs.task == 'sync'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          git log -1 --oneline
+
+      - name: Build
+        if: steps.task.outputs.task == 'build'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
+      - name: Test
+        if: steps.task.outputs.task == 'test'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          if npm run | grep -qE '^  test'; then npm test; else echo 'No npm test script'; fi
