@@ -12,9 +12,22 @@ async function runViewport(name, viewport) {
   const page = await browser.newPage({ viewport });
   const consoleErrors = [];
   const requestFailures = [];
-  page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
-  page.on('pageerror', (err) => consoleErrors.push(String(err)));
-  page.on('requestfailed', (req) => requestFailures.push({ url: req.url(), error: req.failure()?.errorText || 'failed' }));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+      console.error(`[browser:${name}:console] ${msg.text()}`);
+    }
+  });
+  page.on('pageerror', (err) => {
+    const text = String(err?.stack || err);
+    consoleErrors.push(text);
+    console.error(`[browser:${name}:pageerror] ${text}`);
+  });
+  page.on('requestfailed', (req) => {
+    const item = { url: req.url(), error: req.failure()?.errorText || 'failed' };
+    requestFailures.push(item);
+    console.error(`[browser:${name}:requestfailed] ${JSON.stringify(item)}`);
+  });
 
   const response = await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
   await page.waitForSelector('#spin', { state: 'visible', timeout: 20_000 });
@@ -44,7 +57,20 @@ async function runViewport(name, viewport) {
 
   await page.locator('#spin').click();
   await page.waitForFunction(() => document.querySelector('#spin')?.disabled === true, null, { timeout: 3_000 });
-  await page.waitForFunction(() => document.querySelector('#spin')?.disabled === false, null, { timeout: 8_000 });
+  try {
+    await page.waitForFunction(() => document.querySelector('#spin')?.disabled === false, null, { timeout: 8_000 });
+  } catch (error) {
+    await page.screenshot({ path: `${outDir}/${name}-spin-stuck.png`, fullPage: true });
+    const debug = await page.evaluate(() => ({
+      status: document.querySelector('#status')?.textContent?.trim(),
+      balance: document.querySelector('#balance')?.textContent?.trim(),
+      win: document.querySelector('#win')?.textContent?.trim(),
+      spinDisabled: document.querySelector('#spin')?.disabled,
+      loadingDone: document.querySelector('#loading-screen')?.classList.contains('done') || false
+    }));
+    console.error(`[browser:${name}:spin-stuck] ${JSON.stringify({ debug, consoleErrors, requestFailures })}`);
+    throw error;
+  }
 
   const afterSpin = await page.evaluate(() => ({
     status: document.querySelector('#status')?.textContent?.trim(),
