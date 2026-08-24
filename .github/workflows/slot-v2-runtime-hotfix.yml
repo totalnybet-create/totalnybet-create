@@ -1,0 +1,44 @@
+name: Royal Arc V2 Runtime Hotfix
+
+on:
+  push:
+    branches:
+      - royal-arc-v2-premium
+    paths:
+      - '.github/workflows/slot-v2-runtime-hotfix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: royal-arc-v2-premium
+
+      - name: Decouple gameplay timers from Phaser render loop
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('casino/slot.js')
+          s = p.read_text()
+          old1 = "wait(ms){return new Promise((resolve)=>this.time.delayedCall(ms,resolve));}"
+          new1 = "wait(ms){return new Promise((resolve)=>window.setTimeout(resolve,ms));}"
+          old2 = "if(free&&state.freeSpins>0)this.time.delayedCall(state.turbo?320:760,()=>this.spin());"
+          new2 = "if(free&&state.freeSpins>0)window.setTimeout(()=>this.spin(),state.turbo?320:760);"
+          if old1 not in s or old2 not in s:
+              raise SystemExit('expected runtime anchors not found')
+          p.write_text(s.replace(old1,new1).replace(old2,new2))
+          PY
+
+      - name: Commit runtime hardening
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add casino/slot.js
+          git commit -m 'fix: decouple slot timing from render loop'
+          git push origin HEAD:royal-arc-v2-premium

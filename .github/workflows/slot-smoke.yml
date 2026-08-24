@@ -3,7 +3,7 @@ name: Royal Arc Slot Smoke
 on:
   push:
     branches:
-      - royal-arc-slot-v1
+      - royal-arc-v2-premium
     paths:
       - 'casino/**'
       - 'index.html'
@@ -11,7 +11,7 @@ on:
       - '.github/workflows/slot-smoke.yml'
   pull_request:
     branches:
-      - royal-arc-qa-base
+      - royal-arc-casino
     paths:
       - 'casino/**'
       - 'index.html'
@@ -57,7 +57,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: royal-arc-slot-qa
+          name: royal-arc-slot-v2-qa
           path: qa-artifacts
           if-no-files-found: warn
           retention-days: 14

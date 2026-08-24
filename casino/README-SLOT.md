@@ -1,18 +1,25 @@
 # Royal Arc — The Crown Vault
 
-Pierwszy pionowy slice produkcyjnego slota 5×3.
+Produkcyjny vertical slice slota 5×3 rozwijany w kierunku premium-provider presentation.
 
-## Zakres v1
+## Zakres v2.2 premium
 - Phaser 3 / WebGL
 - 5×3, 10 linii
-- reel pooling zamiast tworzenia sprite'ów podczas spinu
-- akceleracja, motion-stretch, stagger stop i elastic settle
-- WILD i Scatter
-- Free Spins
+- reel pooling bez tworzenia sprite'ów podczas spinu
+- akceleracja, motion-stretch, motion streaks, stagger stop i elastic settle
+- anticipation przy układach Scatter
+- stop-impact, camera micro-shake i tiered win presentation
+- syntetyczne SFX Web Audio + haptics mobile
+- count-up wygranej i burst particles
+- WILD, Scatter i Free Spins
 - high-volatility paytable prototype
-- HUD DOM + WebGL playfield
+- uproszczony współczesny cabinet
+- transparentne tła symboli usuwane edge-floodem bez niszczenia ciemnych detali symbolu
+- powiększone symbole i zmniejszona liczba obiektów renderera
+- pełna pionowa scena WebGL 900×1450 na telefonie z geometrią skarbca zamiast pustego dolnego panelu
+- desktop pozostaje w układzie 900×700
 - responsive portrait + landscape
-- zoptymalizowany atlas WebP z własnych symboli użytkownika
+- gameplay timing odseparowany od render loop, żeby spin domykał się także przy spadkach FPS
 
 ## Granice
 Matematyka jest prototypem do strojenia i symulacji. Nie jest certyfikowanym modelem RNG/RTP do gry za realne pieniądze.

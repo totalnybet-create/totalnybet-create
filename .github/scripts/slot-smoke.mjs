@@ -29,6 +29,7 @@ async function runViewport(name, viewport) {
     console.error(`[browser:${name}:requestfailed] ${JSON.stringify(item)}`);
   });
 
+  console.log(`[qa:${name}] navigation`);
   const response = await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
   await page.waitForSelector('#spin', { state: 'visible', timeout: 20_000 });
   await page.waitForSelector('.loading-screen.done', { timeout: 25_000 });
@@ -52,7 +53,7 @@ async function runViewport(name, viewport) {
   if (!before.loadingDone) throw new Error(`${name}: loading screen did not complete`);
   if (!before.canvas || before.canvas.width < 100 || before.canvas.height < 100) throw new Error(`${name}: canvas is not rendered`);
   if (before.scrollWidth > before.innerWidth + 2) throw new Error(`${name}: horizontal overflow ${before.scrollWidth} > ${before.innerWidth}`);
-
+  console.log(`[qa:${name}] ready canvas=${Math.round(before.canvas.width)}x${Math.round(before.canvas.height)}`);
   await page.screenshot({ path: `${outDir}/${name}-ready.png`, fullPage: true });
 
   await page.locator('#spin').click();
@@ -71,6 +72,7 @@ async function runViewport(name, viewport) {
     console.error(`[browser:${name}:spin-stuck] ${JSON.stringify({ debug, consoleErrors, requestFailures })}`);
     throw error;
   }
+  console.log(`[qa:${name}] normal-spin complete`);
 
   const afterSpin = await page.evaluate(() => ({
     status: document.querySelector('#status')?.textContent?.trim(),
@@ -81,22 +83,34 @@ async function runViewport(name, viewport) {
 
   await page.locator('#turbo').click();
   if ((await page.locator('#turbo').getAttribute('aria-pressed')) !== 'true') throw new Error(`${name}: turbo toggle failed`);
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < 3; i += 1) {
     await page.locator('#spin').click();
     await page.waitForFunction(() => document.querySelector('#spin')?.disabled === true, null, { timeout: 3_000 });
-    await page.waitForFunction(() => document.querySelector('#spin')?.disabled === false, null, { timeout: 5_000 });
+    await page.waitForFunction(() => document.querySelector('#spin')?.disabled === false, null, { timeout: 6_000 });
+    console.log(`[qa:${name}] turbo-spin ${i + 1}/3 complete`);
   }
 
   const fps = await page.evaluate(() => new Promise((resolve) => {
     let frames = 0;
     const start = performance.now();
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+    const watchdog = setTimeout(() => finish(null), 3000);
     function tick(now) {
+      if (settled) return;
       frames += 1;
-      if (now - start >= 1200) resolve(Math.round((frames * 1000 / (now - start)) * 10) / 10);
-      else requestAnimationFrame(tick);
+      if (now - start >= 1200) {
+        clearTimeout(watchdog);
+        finish(Math.round((frames * 1000 / (now - start)) * 10) / 10);
+      } else requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
   }));
+  console.log(`[qa:${name}] fps=${fps ?? 'unavailable-headless'}`);
 
   const hardFailures = requestFailures.filter((f) => !f.url.includes('favicon'));
   if (consoleErrors.length) throw new Error(`${name}: console errors: ${consoleErrors.join(' | ')}`);

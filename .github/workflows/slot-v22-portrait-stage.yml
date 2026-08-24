@@ -1,0 +1,53 @@
+name: Royal Arc V2.2 Portrait Stage
+
+on:
+  push:
+    branches:
+      - royal-arc-v2-premium
+    paths:
+      - '.github/workflows/slot-v22-portrait-stage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  portrait-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: royal-arc-v2-premium
+
+      - name: Patch portrait scene and CSS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          js=Path('casino/slot.js')
+          s=js.read_text()
+          swaps={
+            'const VIEW_W = 900;\n  const VIEW_H = 700;': "const VIEW_W = 900;\n  const portraitMobile = window.matchMedia('(max-width: 560px) and (orientation: portrait)').matches;\n  document.documentElement.classList.toggle('portrait-mobile', portraitMobile);\n  const VIEW_H = portraitMobile ? 1450 : 700;",
+            "const beam=this.add.graphics().setDepth(0).setBlendMode(P.BlendModes.ADD);beam.fillStyle(0xffd987,.035);beam.fillTriangle(110,0,390,0,560,590);beam.fillTriangle(790,0,510,0,340,590);": "const beam=this.add.graphics().setDepth(0).setBlendMode(P.BlendModes.ADD);beam.fillStyle(0xffd987,.035);beam.fillTriangle(110,0,390,0,560,VIEW_H-100);beam.fillTriangle(790,0,510,0,340,VIEW_H-100);",
+            "this.add.text(VIEW_W/2,642,'WILD  •  SCATTER  •  FREE SPINS',{fontFamily:'Arial,sans-serif',fontSize:'11px',color:'#a98a5e',letterSpacing:4}).setOrigin(.5);": "this.add.text(VIEW_W/2,portraitMobile?640:642,'WILD  •  SCATTER  •  FREE SPINS',{fontFamily:'Arial,sans-serif',fontSize:'11px',color:'#a98a5e',letterSpacing:4}).setOrigin(.5);\n      if(portraitMobile){\n        const lower=this.add.graphics().setDepth(0);\n        lower.lineStyle(2,0xe4b75a,.08);lower.strokeCircle(VIEW_W/2,1010,360);lower.strokeCircle(VIEW_W/2,1010,285);lower.strokeCircle(VIEW_W/2,1010,210);lower.lineStyle(1,0xffffff,.025);\n        for(let a=0;a<16;a++){const r=P.Math.DegToRad(a*22.5);lower.lineBetween(VIEW_W/2+Math.cos(r)*212,1010+Math.sin(r)*212,VIEW_W/2+Math.cos(r)*354,1010+Math.sin(r)*354);}\n        this.add.text(VIEW_W/2,980,'♛',{fontFamily:'Georgia,serif',fontSize:'220px',color:'#dcb45c',stroke:'#3a1a08',strokeThickness:3}).setOrigin(.5).setAlpha(.055);\n        this.add.text(VIEW_W/2,1190,'THE CROWN VAULT',{fontFamily:'Georgia,serif',fontSize:'24px',color:'#c49b50',letterSpacing:7}).setOrigin(.5).setAlpha(.22);\n        this.add.text(VIEW_W/2,1240,'FORTUNE  •  POWER  •  LEGACY',{fontFamily:'Arial,sans-serif',fontSize:'10px',color:'#9b7e53',letterSpacing:5}).setOrigin(.5).setAlpha(.28);\n      }"
+          }
+          for old,new in swaps.items():
+              if old not in s: raise SystemExit('missing JS anchor: '+old[:100])
+              s=s.replace(old,new)
+          js.write_text(s)
+
+          css=Path('casino/hotfix.css')
+          c=css.read_text()
+          anchor='@media(max-width:560px){'
+          if anchor not in c: raise SystemExit('missing CSS media anchor')
+          c += "\nhtml.portrait-mobile .machine-shell::before{display:none}\nhtml.portrait-mobile .canvas-host{width:114%;max-width:none;height:auto;max-height:100%;aspect-ratio:900/1450;margin-left:-7%;margin-right:-7%;align-self:center;border-radius:10px}\nhtml.portrait-mobile .canvas-host::after{box-shadow:inset 0 0 32px rgba(0,0,0,.5)}\n"
+          css.write_text(c)
+          PY
+
+      - name: Commit portrait stage
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add casino/slot.js casino/hotfix.css
+          git commit -m 'feat: add full-height portrait WebGL vault stage'
+          git push origin HEAD:royal-arc-v2-premium
