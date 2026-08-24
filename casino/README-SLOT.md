@@ -16,6 +16,7 @@ Produkcyjny vertical slice slota 5×3 rozwijany w kierunku premium-provider pres
 - uproszczony współczesny cabinet + większe pole gry na mobile
 - transparentne tła symboli usuwane edge-floodem bez niszczenia ciemnych detali symbolu
 - powiększone symbole i zmniejszona liczba obiektów renderera
+- mobile vault ambience wypełniający przestrzeń pod polem gry bez ciężkich filtrów CSS
 - responsive portrait + landscape
 - gameplay timing odseparowany od render loop, żeby spin domykał się także przy spadkach FPS
 
