@@ -30,13 +30,13 @@
     "NEXT_PUBLIC_CRASH_REAL_MONEY": "false"
   },
   "rewrites": [
-    { "source": "/api/v1/:path*", "destination": { "service": "api" } },
+    { "source": "/api/v1/(.*)", "destination": { "service": "api" } },
     { "source": "/operator-console", "destination": { "service": "api" } },
-    { "source": "/operator-console/:path*", "destination": { "service": "api" } },
-    { "source": "/livewire/:path*", "destination": { "service": "api" } },
-    { "source": "/css/filament/:path*", "destination": { "service": "api" } },
-    { "source": "/js/filament/:path*", "destination": { "service": "api" } },
-    { "source": "/filament/:path*", "destination": { "service": "api" } },
-    { "source": "/:path*", "destination": { "service": "portal" } }
+    { "source": "/operator-console/(.*)", "destination": { "service": "api" } },
+    { "source": "/livewire/(.*)", "destination": { "service": "api" } },
+    { "source": "/css/filament/(.*)", "destination": { "service": "api" } },
+    { "source": "/js/filament/(.*)", "destination": { "service": "api" } },
+    { "source": "/filament/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "portal" } }
   ]
 }
