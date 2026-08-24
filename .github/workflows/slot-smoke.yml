@@ -9,6 +9,14 @@ on:
       - 'index.html'
       - '.github/scripts/slot-smoke.mjs'
       - '.github/workflows/slot-smoke.yml'
+  pull_request:
+    branches:
+      - royal-arc-casino
+    paths:
+      - 'casino/**'
+      - 'index.html'
+      - '.github/scripts/slot-smoke.mjs'
+      - '.github/workflows/slot-smoke.yml'
   workflow_dispatch:
 
 jobs:
