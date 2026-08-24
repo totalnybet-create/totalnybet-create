@@ -1,12 +1,17 @@
 #!/bin/sh
 set -eu
 
-if [ -z "${DB_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
-  export DB_URL="$DATABASE_URL"
+if [ -z "${DB_URL:-}" ]; then
+  for candidate in "${DATABASE_URL:-}" "${DATABASE_URL_UNPOOLED:-}" "${POSTGRES_URL_NON_POOLING:-}" "${POSTGRES_URL:-}" "${NEON_DATABASE_URL:-}"; do
+    if [ -n "$candidate" ]; then
+      export DB_URL="$candidate"
+      break
+    fi
+  done
 fi
 
 if [ -z "${DB_URL:-}" ]; then
-  echo 'Missing DB_URL or DATABASE_URL' >&2
+  echo 'Missing PostgreSQL URL. Set DB_URL, DATABASE_URL, DATABASE_URL_UNPOOLED, POSTGRES_URL_NON_POOLING, POSTGRES_URL, or NEON_DATABASE_URL.' >&2
   exit 1
 fi
 if [ -z "${APP_KEY:-}" ]; then
@@ -33,6 +38,10 @@ if [ -n "${VERCEL_PROJECT_PRODUCTION_URL:-}" ]; then
   export APP_URL="https://${VERCEL_PROJECT_PRODUCTION_URL}"
   export FRONTEND_URL="https://${VERCEL_PROJECT_PRODUCTION_URL}"
   export CORS_ALLOWED_ORIGINS="https://${VERCEL_PROJECT_PRODUCTION_URL}"
+elif [ -n "${VERCEL_URL:-}" ]; then
+  export APP_URL="https://${VERCEL_URL}"
+  export FRONTEND_URL="https://${VERCEL_URL}"
+  export CORS_ALLOWED_ORIGINS="https://${VERCEL_URL}"
 fi
 
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
