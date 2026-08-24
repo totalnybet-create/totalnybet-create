@@ -1,0 +1,47 @@
+name: Build Royal Arc Symbol Atlas
+
+on:
+  push:
+    branches:
+      - royal-arc-slot-v1
+    paths:
+      - 'casino/assets/symbols/chunk-*.txt'
+      - '.github/workflows/slot-asset-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-atlas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: royal-arc-slot-v1
+
+      - name: Reconstruct WebP atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p casino/assets/symbols
+          cat casino/assets/symbols/chunk-*.txt | tr -d '\r\n ' | base64 --decode > casino/assets/symbols/symbols-atlas.webp
+          test -s casino/assets/symbols/symbols-atlas.webp
+          file casino/assets/symbols/symbols-atlas.webp
+          sha256sum casino/assets/symbols/symbols-atlas.webp
+
+      - name: Commit binary atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f casino/assets/symbols/symbols-atlas.webp
+          if git diff --cached --quiet; then
+            echo 'Atlas already current'
+            exit 0
+          fi
+          git commit -m 'assets: build binary Royal Arc symbol atlas'
+          git push origin HEAD:royal-arc-slot-v1
