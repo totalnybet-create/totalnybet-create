@@ -3,21 +3,16 @@
   "services": {
     "portal": {
       "runtime": "container",
-      "root": ".",
-      "entrypoint": "deploy/Dockerfile.portal.vercel",
+      "root": "portal-service",
+      "entrypoint": "Dockerfile",
       "bindings": [
-        {
-          "type": "service",
-          "service": "api",
-          "format": "url",
-          "env": "API_URL"
-        }
+        { "type": "service", "service": "api", "format": "url", "env": "API_URL" }
       ]
     },
     "api": {
       "runtime": "container",
-      "root": ".",
-      "entrypoint": "deploy/Dockerfile.api.vercel"
+      "root": "api-service",
+      "entrypoint": "Dockerfile"
     }
   },
   "env": {
