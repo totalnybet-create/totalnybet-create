@@ -11,6 +11,5 @@
   .canvas-host{width:100%;height:auto;max-width:none;aspect-ratio:900/700}
   .frame-title{top:23px}.frame-crown{font-size:25px}.frame-lights{top:50px;bottom:20px}
   .status-strip{height:20px}.control-deck{min-height:70px}.spin-button{width:58px;height:58px}
-  body::after{content:"";position:fixed;left:-10vw;right:-10vw;bottom:-10vh;height:48vh;pointer-events:none;opacity:.22;z-index:0;background:repeating-linear-gradient(90deg,transparent 0 44px,rgba(240,200,107,.10) 45px 46px),repeating-linear-gradient(0deg,transparent 0 34px,rgba(240,200,107,.08) 35px 36px),radial-gradient(ellipse at 50% 0%,rgba(117,51,28,.20),transparent 66%);transform:perspective(420px) rotateX(62deg);transform-origin:50% 100%}
 }
 @media(max-width:390px){.top-hud{min-height:44px}.brand-lockup strong{font-size:11px}.top-metrics>div{min-width:54px}.machine-shell{padding-top:31px}.control-deck{min-height:66px}.spin-button{width:54px;height:54px}}
