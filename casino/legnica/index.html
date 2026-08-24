@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#090705">
+<title>Brama Piastów — Legnica</title>
+<style>
+:root{
+  --bg:#080604;--bg2:#120d08;--stone:#6e675c;--stone2:#454038;--stone3:#27241f;
+  --gold:#f5c95b;--gold2:#a86d16;--ember:#ff7b2f;--red:#9c2f28;--cream:#f8e7bd;
+  --ink:#0e0b08;--panel:rgba(11,8,5,.88);--line:rgba(255,226,165,.16);--muted:#b9aa8f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050403;color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button{font:inherit}
+body:before{content:"";position:fixed;inset:0;background:
+ radial-gradient(circle at 18% 7%,rgba(255,123,47,.09),transparent 24%),
+ radial-gradient(circle at 82% 10%,rgba(245,201,91,.07),transparent 24%),
+ linear-gradient(180deg,#17100a 0%,#090705 40%,#040302 100%);pointer-events:none}
+.app{position:relative;height:100dvh;max-width:1180px;margin:auto;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom);isolation:isolate}
+.ambient{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.ambient:before,.ambient:after{content:"";position:absolute;width:320px;height:320px;border-radius:50%;filter:blur(70px);opacity:.14;animation:drift 8s ease-in-out infinite alternate}
+.ambient:before{left:-120px;bottom:2%;background:#bb3f1e}.ambient:after{right:-130px;top:12%;background:#cc9e3d;animation-delay:-3s}
+.topbar{height:54px;display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:6px 4px}
+.back{width:38px;height:38px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,#21180f,#100c08);color:#fff;font-size:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.brand{min-width:0}.brand b{display:block;font-family:Georgia,serif;font-size:16px;letter-spacing:.09em;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand span{display:block;font-size:8px;letter-spacing:.2em;color:#a79370;text-transform:uppercase}
+.wallet{margin-left:auto;display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:12px;border:1px solid rgba(245,201,91,.23);background:linear-gradient(180deg,rgba(47,35,20,.96),rgba(18,13,8,.96));font-weight:900;font-size:12px;box-shadow:0 5px 24px rgba(0,0,0,.28)}
+.coin{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff2a9,#e8b742 47%,#8d5607 70%);box-shadow:0 0 9px rgba(245,201,91,.35)}
+.game{flex:1;min-height:0;display:grid;grid-template-rows:auto 1fr auto;gap:7px}
+.titleband{position:relative;text-align:center;padding:2px 80px 4px;min-height:48px}
+.titleband .kicker{font-size:8px;letter-spacing:.25em;color:#bca77c;text-transform:uppercase}
+.titleband h1{margin:1px 0 0;font-family:Georgia,serif;font-size:clamp(20px,4vw,32px);line-height:1;color:#f8e8bd;text-shadow:0 2px 0 #5f3810,0 0 18px rgba(245,201,91,.18);letter-spacing:.055em}
+.jackpot{position:absolute;right:0;top:1px;padding:6px 9px;border-radius:11px;border:1px solid rgba(245,201,91,.19);background:rgba(15,10,6,.72);min-width:110px}.jackpot span{display:block;font-size:7px;letter-spacing:.12em;color:#9e8b6b}.jackpot b{display:block;color:var(--gold);font-size:12px;margin-top:1px}
+.stage{position:relative;min-height:0;display:flex;align-items:stretch;justify-content:center}
+.castle{position:relative;width:min(100%,850px);height:100%;min-height:330px;display:grid;grid-template-columns:18% 64% 18%;align-items:stretch;filter:drop-shadow(0 24px 25px rgba(0,0,0,.5))}
+.tower{position:relative;margin-top:8%;border:1px solid #756e62;background:
+ linear-gradient(90deg,rgba(255,255,255,.05),transparent 22%,rgba(0,0,0,.15) 80%),
+ repeating-linear-gradient(0deg,transparent 0 27px,rgba(24,22,18,.42) 28px 30px),
+ repeating-linear-gradient(90deg,#5c574e 0 48px,#514c44 49px 96px);box-shadow:inset 0 0 0 2px rgba(0,0,0,.18),inset 0 -35px 60px rgba(0,0,0,.3)}
+.tower.left{border-radius:8px 0 0 8px}.tower.right{border-radius:0 8px 8px 0}
+.tower:before{content:"";position:absolute;left:-5px;right:-5px;top:-24px;height:30px;background:linear-gradient(180deg,#7a7366,#4f4a41);clip-path:polygon(0 100%,0 30%,12% 30%,12% 0,29% 0,29% 30%,43% 30%,43% 0,59% 0,59% 30%,73% 30%,73% 0,89% 0,89% 30%,100% 30%,100% 100%);border-bottom:2px solid #332f29}
+.tower:after{content:"";position:absolute;width:26%;height:28%;left:37%;top:24%;border-radius:50px 50px 4px 4px;background:linear-gradient(90deg,#181510,#050403,#181510);box-shadow:inset 0 0 16px #000,0 0 0 3px #837b6d}
+.portal{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0}
+.portalShell{position:absolute;inset:0 -1px 0;background:
+ linear-gradient(90deg,rgba(255,255,255,.05),transparent 15%,rgba(255,255,255,.025) 50%,rgba(0,0,0,.22)),
+ repeating-linear-gradient(0deg,transparent 0 30px,rgba(25,22,18,.34) 31px 33px),
+ repeating-linear-gradient(90deg,#70695f 0 62px,#655f56 63px 125px);border:1px solid #7d7568;box-shadow:inset 0 0 0 2px rgba(24,20,16,.35),inset 0 -60px 80px rgba(0,0,0,.25)}
+.portalShell:before{content:"";position:absolute;left:8%;right:8%;top:4%;height:24%;border:3px solid #958a77;border-bottom:0;border-radius:50% 50% 0 0/100% 100% 0 0;box-shadow:0 0 0 5px #403a32,0 0 0 8px #81796c,inset 0 10px 20px rgba(0,0,0,.25)}
+.frieze{position:absolute;z-index:4;top:3%;left:12%;right:12%;height:24%;display:flex;align-items:flex-start;justify-content:center;pointer-events:none}
+.crest{position:relative;margin-top:-1px;width:86px;height:82px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.55))}
+.crest .shield{position:absolute;left:14px;top:18px;width:58px;height:54px;background:linear-gradient(135deg,#cfad43,#74430d);clip-path:polygon(50% 0,94% 15%,87% 67%,50% 100%,13% 67%,6% 15%);border-radius:8px}
+.crest .shield:before{content:"L";position:absolute;inset:0;display:grid;place-items:center;font-family:Georgia,serif;font-weight:900;font-size:28px;color:#241308;text-shadow:0 1px #f7dc7d}
+.crest:before,.crest:after{content:"";position:absolute;top:8px;width:34px;height:55px;border:4px solid #b78d31;border-radius:50% 8px 50% 8px;opacity:.9}.crest:before{left:0;transform:rotate(-30deg)}.crest:after{right:0;transform:rotate(30deg) scaleX(-1)}
+.ornament{position:absolute;top:16%;left:6%;right:6%;height:7px;border-top:2px solid #9b8e78;border-bottom:2px solid #3b352d;background:repeating-linear-gradient(90deg,#7b6f5d 0 10px,#4b4236 11px 20px)}
+.reelFrame{position:relative;z-index:5;width:86%;margin-bottom:6%;padding:10px;border-radius:20px;background:linear-gradient(145deg,#2b1c0d,#0b0805 45%,#2b1b0c);border:2px solid #b8862a;box-shadow:0 0 0 2px #3a250d,0 0 0 5px #7c6849,0 18px 30px rgba(0,0,0,.48),inset 0 0 28px rgba(255,180,46,.08)}
+.reelFrame:before{content:"";position:absolute;inset:-8px;border-radius:25px;border:1px solid rgba(238,203,123,.25);pointer-events:none}
+.reelFrame.winGlow{animation:frameWin .55s ease-in-out alternate 4}
+.reels{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:5px;border-radius:13px;background:#100b07;overflow:hidden;box-shadow:inset 0 0 24px #000}
+.symbol{aspect-ratio:1/.92;min-height:0;border-radius:11px;display:grid;place-items:center;position:relative;overflow:hidden;background:linear-gradient(145deg,#302319,#17100b);border:1px solid rgba(240,213,158,.13);box-shadow:inset 0 1px rgba(255,255,255,.04);transition:transform .18s,filter .18s,border-color .18s}
+.symbol:before{content:"";position:absolute;inset:3px;border:1px solid rgba(255,255,255,.035);border-radius:8px}
+.symbol svg{width:72%;height:72%;filter:drop-shadow(0 4px 3px rgba(0,0,0,.48))}
+.symbol.spinning{animation:reelBlur .09s linear infinite;filter:blur(1.6px) saturate(.8)}
+.symbol.win{z-index:2;border-color:#ffd96c;box-shadow:0 0 0 1px #ffd96c,0 0 20px rgba(255,196,62,.58),inset 0 0 16px rgba(255,200,73,.16);animation:symbolWin .45s ease-in-out alternate infinite}
+.paylines{position:absolute;inset:0;pointer-events:none;z-index:8}.payline{position:absolute;height:3px;left:4%;right:4%;background:linear-gradient(90deg,transparent,#ffe68e 16%,#fff4ba 50%,#ffe68e 84%,transparent);filter:drop-shadow(0 0 5px #ffbd3d);opacity:0}.payline.show{animation:lineFlash 1s ease 1}.payline.p1{top:21%}.payline.p2{top:50%}.payline.p3{top:79%}.payline.p4{top:50%;transform:rotate(16deg)}.payline.p5{top:50%;transform:rotate(-16deg)}
+.torch{position:absolute;z-index:9;width:18px;height:42px;top:38%;filter:drop-shadow(0 0 7px #ff782c)}.torch.left{left:3%}.torch.right{right:3%}.torch:before{content:"";position:absolute;left:5px;bottom:0;width:8px;height:23px;border-radius:3px;background:linear-gradient(90deg,#3d2917,#9a6431,#3d2917)}.torch:after{content:"";position:absolute;left:2px;top:0;width:14px;height:22px;border-radius:60% 40% 65% 45%;background:radial-gradient(circle at 50% 65%,#fff4a3 0 18%,#ffb02e 20% 48%,#f04d1d 49% 72%,transparent 73%);animation:flame .16s ease-in-out infinite alternate;transform-origin:50% 100%}
+.status{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);z-index:10;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:5px 11px;border-radius:999px;background:rgba(8,6,4,.72);border:1px solid rgba(255,222,160,.12);font-size:9px;color:#d5c09a;letter-spacing:.03em}
+.controlsWrap{flex:0 0 auto;display:grid;gap:6px;padding-bottom:2px}
+.meta{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.meter{min-width:0;padding:8px 10px;border-radius:13px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(37,27,17,.92),rgba(14,10,7,.94));box-shadow:inset 0 1px rgba(255,255,255,.025)}.meter.right{text-align:right}.meter small{display:block;color:#9b896e;font-size:7px;letter-spacing:.12em}.meter b{display:block;margin-top:1px;color:#f8e5bb;font-size:13px}.meter.win b{color:#ffd55d}
+.spin{width:74px;height:74px;border-radius:50%;border:3px solid #7f6230;background:radial-gradient(circle at 35% 28%,#fff0a7 0 5%,#e9b942 6% 25%,#a45e12 58%,#5f3309 78%);box-shadow:0 0 0 4px #26180a,0 7px 22px rgba(0,0,0,.45),0 0 22px rgba(245,201,91,.22),inset 0 -8px 12px rgba(75,37,4,.45);font-size:11px;font-weight:950;color:#211205;text-shadow:0 1px #ffea9a;letter-spacing:.05em}.spin:active{transform:translateY(2px) scale(.97)}.spin:disabled{filter:grayscale(.5);opacity:.6}
+.actions{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.ctl{border:1px solid var(--line);background:linear-gradient(180deg,#271b11,#110c08);color:#d8c39d;border-radius:10px;padding:8px 5px;font-size:8px;font-weight:800;min-width:0}.ctl.on{color:#fff3c1;border-color:#a77b2c;background:linear-gradient(180deg,#503311,#201306);box-shadow:inset 0 0 14px rgba(245,201,91,.09)}
+.bonusBar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:7px 9px;border:1px solid rgba(190,137,41,.17);border-radius:11px;background:rgba(14,10,7,.7)}.bonusBar span{font-size:7px;color:#ac997a;letter-spacing:.1em}.bonusTrack{height:5px;border-radius:999px;background:#2d2115;overflow:hidden}.bonusTrack i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c56b1f,#ffd76b);box-shadow:0 0 10px #ffae38;transition:width .3s}.bonusBar b{font-size:9px;color:#e5c47e}
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:radial-gradient(circle,rgba(126,70,12,.28),rgba(3,2,1,.9) 62%);backdrop-filter:blur(3px)}.overlay.hide{display:none}.winCard{text-align:center;animation:pop .35s ease}.winCard small{display:block;font-size:10px;letter-spacing:.3em;color:#ffe7a1}.winCard strong{display:block;font-family:Georgia,serif;font-size:clamp(46px,13vw,90px);color:#ffd96a;text-shadow:0 3px #6f3d06,0 0 35px rgba(255,194,61,.55)}.winCard span{display:block;font-size:10px;color:#cbb993;margin-top:5px}
+.freeBadge{position:absolute;z-index:20;top:9px;left:50%;transform:translateX(-50%);padding:6px 12px;border-radius:999px;background:linear-gradient(180deg,#9a2f23,#4f160f);border:1px solid #d47756;color:#ffe8be;font-size:9px;font-weight:900;box-shadow:0 7px 22px rgba(0,0,0,.35)}.freeBadge.hide{display:none}
+@keyframes reelBlur{0%{transform:translateY(-5px) scaleY(1.08)}100%{transform:translateY(5px) scaleY(.96)}}
+@keyframes symbolWin{to{transform:scale(1.06);filter:brightness(1.28)}}
+@keyframes frameWin{to{box-shadow:0 0 0 2px #dca53d,0 0 0 5px #8d754f,0 18px 30px rgba(0,0,0,.45),0 0 34px rgba(255,196,58,.5),inset 0 0 30px rgba(255,185,43,.16)}}
+@keyframes lineFlash{0%,100%{opacity:0}20%,75%{opacity:1}}
+@keyframes flame{from{transform:rotate(-5deg) scaleY(.96)}to{transform:rotate(5deg) scaleY(1.08)}}
+@keyframes pop{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@keyframes drift{to{transform:translate(35px,-25px) scale(1.12)}}
+@media(max-width:720px){
+ .app{padding-left:6px;padding-right:6px}.topbar{height:48px}.back{width:34px;height:34px}.wallet{font-size:11px}.titleband{padding-left:55px;padding-right:92px;min-height:44px}.titleband h1{font-size:21px}.jackpot{min-width:92px;padding:5px 7px}.jackpot b{font-size:10px}
+ .game{gap:4px}.castle{grid-template-columns:13% 74% 13%;min-height:270px}.tower{margin-top:17%}.tower:before{top:-17px;height:22px}.tower:after{width:36%;left:32%;height:21%;top:31%}.portalShell:before{left:5%;right:5%}.crest{transform:scale(.75);transform-origin:top center}.ornament{top:18%}.reelFrame{width:94%;padding:6px;margin-bottom:8%;border-radius:14px}.reelFrame:before{inset:-5px}.reels{gap:3px;padding:3px}.symbol{border-radius:7px}.torch{top:43%;transform:scale(.8)}.torch.left{left:1%}.torch.right{right:1%}.status{font-size:8px;bottom:2.2%}
+ .spin{width:64px;height:64px}.meter{padding:7px 8px}.meter b{font-size:11px}.actions{gap:3px}.ctl{font-size:7px;padding:7px 2px}.bonusBar{padding:6px 8px}
+}
+@media(max-height:650px){.topbar{height:42px}.titleband{min-height:36px}.titleband h1{font-size:19px}.castle{min-height:230px}.crest{transform:scale(.68);transform-origin:top center}.reelFrame{margin-bottom:4%;width:90%}.spin{width:58px;height:58px}.actions .ctl{padding:6px 2px}.bonusBar{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="ambient"></div>
+  <header class="topbar">
+    <button class="back" id="backBtn" aria-label="Powrót">‹</button>
+    <div class="brand"><b>ROYAL ARC</b><span>Legnica Collection</span></div>
+    <div class="wallet"><span class="coin"></span><span id="balance">10 000</span></div>
+  </header>
+
+  <main class="game">
+    <section class="titleband">
+      <div class="kicker">Zamek Piastowski • Legnica</div>
+      <h1>BRAMA PIASTÓW</h1>
+      <div class="jackpot"><span>PIAST JACKPOT</span><b id="jackpot">1 284 750</b></div>
+    </section>
+
+    <section class="stage">
+      <div class="freeBadge hide" id="freeBadge">DARMOWE SPINY: <span id="freeCount">0</span></div>
+      <div class="castle">
+        <div class="tower left"><div class="torch left"></div></div>
+        <div class="portal">
+          <div class="portalShell"></div>
+          <div class="frieze"><div class="crest"><div class="shield"></div></div></div>
+          <div class="ornament"></div>
+          <div class="reelFrame" id="reelFrame">
+            <div class="reels" id="reels"></div>
+            <div class="paylines" id="paylines">
+              <i class="payline p1"></i><i class="payline p2"></i><i class="payline p3"></i><i class="payline p4"></i><i class="payline p5"></i>
+            </div>
+          </div>
+        </div>
+        <div class="tower right"><div class="torch right"></div></div>
+      </div>
+      <div class="status" id="status">20 linii • 5×3 • zakręć, aby wejść do bramy</div>
+    </section>
+
+    <section class="controlsWrap">
+      <div class="bonusBar"><span>POSTĘP DO BONUSU BRAMY</span><div class="bonusTrack"><i id="bonusFill"></i></div><b id="bonusText">0 / 6</b></div>
+      <div class="meta">
+        <div class="meter"><small>STAWKA</small><b id="betValue">50</b></div>
+        <button class="spin" id="spinBtn">SPIN</button>
+        <div class="meter right win"><small>WYGRANA</small><b id="winValue">0</b></div>
+      </div>
+      <div class="actions">
+        <button class="ctl" id="betDown">− STAWKA</button>
+        <button class="ctl" id="turboBtn">TURBO</button>
+        <button class="ctl" id="autoBtn">AUTO ×10</button>
+        <button class="ctl" id="soundBtn">DŹWIĘK</button>
+        <button class="ctl" id="betUp">+ STAWKA</button>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="overlay hide" id="bigWin"><div class="winCard"><small id="bigWinLabel">WIELKA WYGRANA</small><strong id="bigWinValue">0</strong><span>Brama Piastów • Legnica</span></div></div>
+<script>
+(()=>{
+const fmt=n=>Math.floor(n).toLocaleString('pl-PL');
+const STORAGE='legnicaPiastGateV1';
+const defaults={balance:10000,jackpot:1284750,bet:50,bonus:0,free:0,turbo:false,sound:true,spins:0,wagered:0,wins:0};
+let S={...defaults,...JSON.parse(localStorage.getItem(STORAGE)||'{}')};
+let spinning=false,auto=0,current=[],stopTimers=[];
+const bets=[10,25,50,100,250,500,1000];
+const el=id=>document.getElementById(id);
+const E={balance:el('balance'),jackpot:el('jackpot'),bet:el('betValue'),win:el('winValue'),reels:el('reels'),status:el('status'),spin:el('spinBtn'),frame:el('reelFrame'),bonusFill:el('bonusFill'),bonusText:el('bonusText'),freeBadge:el('freeBadge'),freeCount:el('freeCount')};
+const save=()=>localStorage.setItem(STORAGE,JSON.stringify(S));
+
+const icons={
+ eagle:`<svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="eg" x1="0" x2="1"><stop stop-color="#f6df92"/><stop offset="1" stop-color="#a86b13"/></linearGradient></defs><path d="M48 15c8 3 13 8 16 15l19-9-8 18 15 4-19 9c-2 14-8 23-21 31-13-8-20-18-21-31l-19-9 15-4-8-18 20 9c2-7 6-12 11-15z" fill="url(#eg)"/><path d="M43 29c5-8 11-8 16 0l-8 10z" fill="#3b2310"/><circle cx="56" cy="26" r="2.5" fill="#160d07"/></svg>`,
+ crown:`<svg viewBox="0 0 100 100"><path d="M14 67 21 33l24 19 7-34 15 34 22-19-4 34z" fill="#e2b845" stroke="#6b3c0b" stroke-width="3"/><rect x="16" y="66" width="70" height="15" rx="4" fill="#9f5f12"/><circle cx="21" cy="31" r="5" fill="#f6e09a"/><circle cx="52" cy="17" r="5" fill="#f6e09a"/><circle cx="89" cy="31" r="5" fill="#f6e09a"/></svg>`,
+ gate:`<svg viewBox="0 0 100 100"><defs><linearGradient id="st" x1="0" x2="1"><stop stop-color="#b8aa92"/><stop offset="1" stop-color="#61594e"/></linearGradient></defs><path d="M15 82V31h12V20h12v11h22V20h12v11h12v51H64V52c0-15-28-15-28 0v30z" fill="url(#st)" stroke="#322d27" stroke-width="3"/><path d="M42 82V53c0-10 16-10 16 0v29z" fill="#17120d"/><rect x="23" y="42" width="10" height="11" fill="#271f18"/><rect x="67" y="42" width="10" height="11" fill="#271f18"/></svg>`,
+ sword:`<svg viewBox="0 0 100 100"><path d="M64 12 78 7 73 22 45 57 37 49z" fill="#dfe5e7" stroke="#6e7276" stroke-width="3"/><path d="m34 46 20 20-7 7-20-20z" fill="#d3a23c"/><path d="m28 57 15 15-5 9-19-19z" fill="#7b3b25"/><circle cx="18" cy="82" r="7" fill="#d1a13a"/></svg>`,
+ coin:`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#e7b842" stroke="#7a490a" stroke-width="6"/><circle cx="50" cy="50" r="25" fill="none" stroke="#f9de7d" stroke-width="3"/><text x="50" y="61" text-anchor="middle" font-family="Georgia" font-size="35" font-weight="900" fill="#6f410b">L</text></svg>`,
+ chalice:`<svg viewBox="0 0 100 100"><path d="M28 18h44v13c0 18-9 28-18 31v12h16v10H30V74h16V62c-9-3-18-13-18-31z" fill="#d9ad3d" stroke="#72440c" stroke-width="3"/><path d="M29 28H16c0 16 7 23 19 24M71 28h13c0 16-7 23-19 24" fill="none" stroke="#d9ad3d" stroke-width="7"/></svg>`,
+ ruby:`<svg viewBox="0 0 100 100"><path d="M50 12 83 35 71 74 50 90 29 74 17 35z" fill="#a82f30" stroke="#5d1718" stroke-width="4"/><path d="M17 35h66L50 90z" fill="#ef5550" opacity=".44"/><path d="M31 35 50 12l19 23-19 55z" fill="#d84542" opacity=".55"/></svg>`,
+ acorn:`<svg viewBox="0 0 100 100"><path d="M31 44c0-18 38-18 38 0 0 22-12 37-19 45-7-8-19-23-19-45z" fill="#9e6030" stroke="#4e2b13" stroke-width="4"/><path d="M25 43c2-15 48-15 50 0-11 7-39 7-50 0z" fill="#65502c"/><path d="M50 29c1-10 8-14 15-14" fill="none" stroke="#63502c" stroke-width="6" stroke-linecap="round"/></svg>`
+};
+const symbols=[
+ {id:'eagle',svg:icons.eagle,w:6,pay:[0,0,8,22,70]},
+ {id:'crown',svg:icons.crown,w:8,pay:[0,0,6,16,48]},
+ {id:'gate',svg:icons.gate,w:10,pay:[0,0,4,12,35],scatter:true},
+ {id:'sword',svg:icons.sword,w:13,pay:[0,0,3,8,22]},
+ {id:'chalice',svg:icons.chalice,w:15,pay:[0,0,2.5,6,16]},
+ {id:'ruby',svg:icons.ruby,w:18,pay:[0,0,2,5,12]},
+ {id:'coin',svg:icons.coin,w:22,pay:[0,0,1.5,4,9]},
+ {id:'acorn',svg:icons.acorn,w:25,pay:[0,0,1.2,3,7]}
+];
+const totalW=symbols.reduce((a,s)=>a+s.w,0);
+function pick(){let r=Math.random()*totalW;for(let i=0;i<symbols.length;i++){r-=symbols[i].w;if(r<=0)return i}return symbols.length-1}
+function grid(){return Array.from({length:15},()=>pick())}
+const lines=[
+ [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],
+ [0,6,12,8,4],[10,6,2,8,14],
+ [0,1,7,3,4],[10,11,7,13,14],[5,1,2,3,9],[5,11,12,13,9],
+ [0,6,7,8,4],[10,6,7,8,14],[5,1,7,13,9],[5,11,7,3,9],
+ [0,6,2,8,4],[10,6,12,8,14],
+ [0,1,7,13,14],[10,11,7,3,4],[5,6,2,8,9],[5,6,12,8,9],[0,6,7,8,14]
+];
+function evaluate(g,bet){let wins=[];for(let li=0;li<lines.length;li++){const l=lines[li],sym=g[l[0]];let n=1;for(let k=1;k<l.length;k++){if(g[l[k]]===sym)n++;else break}if(n>=3){const mult=symbols[sym].pay[n-1]||0;if(mult>0)wins.push({line:li,cells:l.slice(0,n),pay:bet*mult/20,sym,n})}}
+ const scat=g.map((x,i)=>symbols[x].scatter?i:-1).filter(i=>i>=0);if(scat.length>=3)wins.push({line:-1,cells:scat,pay:bet*(scat.length>=5?15:scat.length===4?6:2),scatter:true,n:scat.length});
+ return wins
+}
+function render(winCells=[]){E.reels.innerHTML=current.map((si,i)=>`<div class="symbol ${winCells.includes(i)?'win':''}" data-i="${i}">${symbols[si].svg}</div>`).join('')}
+function ui(){E.balance.textContent=fmt(S.balance);E.jackpot.textContent=fmt(S.jackpot);E.bet.textContent=fmt(S.bet);E.bonusFill.style.width=Math.min(100,S.bonus/6*100)+'%';E.bonusText.textContent=`${Math.min(6,S.bonus)} / 6`;el('turboBtn').classList.toggle('on',S.turbo);el('soundBtn').classList.toggle('on',S.sound);el('soundBtn').textContent=S.sound?'DŹWIĘK ✓':'DŹWIĘK';if(S.free>0){E.freeBadge.classList.remove('hide');E.freeCount.textContent=S.free}else E.freeBadge.classList.add('hide');save()}
+function beep(freq=420,dur=.05,type='sine',gain=.035){if(!S.sound)return;try{const A=window.__audio||(window.__audio=new (AudioContext||webkitAudioContext)()),o=A.createOscillator(),g=A.createGain();o.type=type;o.frequency.value=freq;g.gain.value=gain;o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+dur)}catch(e){}}
+function clearLines(){document.querySelectorAll('.payline').forEach(x=>x.classList.remove('show'))}
+function flashLine(i){if(i<0)return;const map=[1,2,3,4,5];const n=map[i%5];const p=document.querySelector('.payline.p'+n);if(p){p.classList.remove('show');void p.offsetWidth;p.classList.add('show')}}
+function changeBet(d){if(spinning)return;let i=bets.indexOf(S.bet);i=Math.max(0,Math.min(bets.length-1,i+d));S.bet=bets[i];ui();beep(340,.035)}
+function toggleAuto(){if(auto){auto=0;el('autoBtn').classList.remove('on');el('autoBtn').textContent='AUTO ×10'}else{auto=10;el('autoBtn').classList.add('on');el('autoBtn').textContent='STOP';spin()}}
+function showBig(v,label='WIELKA WYGRANA'){el('bigWinLabel').textContent=label;el('bigWinValue').textContent=fmt(v);el('bigWin').classList.remove('hide');beep(660,.16,'triangle',.05);setTimeout(()=>beep(880,.18,'triangle',.045),160);setTimeout(()=>el('bigWin').classList.add('hide'),1250)}
+function grantBonus(){S.free+=5;S.bonus=0;ui();showBig(5,'BONUS BRAMY • 5 SPINÓW');E.status.textContent='Brama otwarta — zdobywasz 5 darmowych spinów';}
+function spin(){
+ if(spinning)return;
+ const freeSpin=S.free>0;
+ if(!freeSpin&&S.balance<S.bet){E.status.textContent='Za mało żetonów na tę stawkę';auto=0;el('autoBtn').classList.remove('on');el('autoBtn').textContent='AUTO ×10';beep(160,.12,'square');return}
+ spinning=true;clearLines();E.frame.classList.remove('winGlow');E.spin.disabled=true;E.win.textContent='0';
+ if(freeSpin)S.free--;else{S.balance-=S.bet;S.wagered+=S.bet;S.jackpot+=Math.max(1,Math.floor(S.bet*.012))}
+ S.spins++;current=grid();render();document.querySelectorAll('.symbol').forEach(x=>x.classList.add('spinning'));E.status.textContent=freeSpin?'Darmowy spin…':'Brama losuje wynik…';ui();beep(220,.055,'sawtooth',.025);
+ const delay=S.turbo?210:620;
+ for(let c=0;c<5;c++)stopTimers.push(setTimeout(()=>{document.querySelectorAll(`.symbol:nth-child(5n+${c+1})`).forEach(x=>x.classList.remove('spinning'));beep(250+c*45,.03,'square',.018)},(S.turbo?32:90)*c+delay*.45));
+ setTimeout(()=>{
+   const wins=evaluate(current,S.bet),cells=[...new Set(wins.flatMap(w=>w.cells))],total=Math.floor(wins.reduce((a,w)=>a+w.pay,0));
+   render(cells);if(total>0){S.balance+=total;S.wins++;E.win.textContent=fmt(total);E.frame.classList.add('winGlow');E.status.innerHTML=`Wygrana <b style="color:#ffd666">${fmt(total)}</b> • ${wins.length} układ${wins.length===1?'':'y'}`;wins.slice(0,3).forEach((w,i)=>setTimeout(()=>flashLine(w.line),i*230));beep(520,.07,'triangle',.04);if(total>=S.bet*12)showBig(total,total>=S.bet*35?'MEGA WYGRANA':'WIELKA WYGRANA')}
+   else{E.status.textContent=freeSpin?'Darmowy spin bez wygranej':'Brama pozostaje zamknięta — próbuj dalej'}
+   const gates=current.filter(i=>symbols[i].scatter).length;if(gates>0)S.bonus=Math.min(6,S.bonus+gates);else if(Math.random()<.28)S.bonus=Math.min(6,S.bonus+1);if(S.bonus>=6)setTimeout(grantBonus,350);
+   spinning=false;E.spin.disabled=false;ui();
+   if(auto>0){auto--;if(auto>0)setTimeout(spin,S.turbo?180:560);else{el('autoBtn').classList.remove('on');el('autoBtn').textContent='AUTO ×10'}}
+ },delay+(S.turbo?190:430));
+}
+el('spinBtn').onclick=spin;el('betDown').onclick=()=>changeBet(-1);el('betUp').onclick=()=>changeBet(1);el('turboBtn').onclick=()=>{S.turbo=!S.turbo;ui();beep(390,.035)};el('soundBtn').onclick=()=>{S.sound=!S.sound;ui();if(S.sound)beep(520,.06)};el('autoBtn').onclick=toggleAuto;el('backBtn').onclick=()=>{if(history.length>1)history.back();else location.href='../'};el('bigWin').onclick=()=>el('bigWin').classList.add('hide');
+current=grid();render();ui();
+})();
+</script>
+</body>
+</html>
