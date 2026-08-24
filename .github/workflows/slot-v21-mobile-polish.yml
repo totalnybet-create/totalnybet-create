@@ -1,0 +1,49 @@
+name: Royal Arc V2.1 Mobile Polish
+
+on:
+  push:
+    branches:
+      - royal-arc-v2-premium
+    paths:
+      - '.github/workflows/slot-v21-mobile-polish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout V2 branch
+        uses: actions/checkout@v4
+        with:
+          ref: royal-arc-v2-premium
+
+      - name: Polish CSS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('casino/hotfix.css')
+          s=p.read_text()
+          swaps={
+            'filter:blur(32px)': 'filter:none',
+            'backdrop-filter:blur(8px)': 'backdrop-filter:none',
+            'backdrop-filter:blur(7px)': 'backdrop-filter:none',
+            '.slot-app::before{filter:blur(20px)}': '.slot-app::before{filter:none}',
+            '.machine-shell::before{display:block;content:"";position:absolute;inset:auto 8% -22% 8%;height:48%;border:0;border-radius:50%;background:radial-gradient(ellipse,rgba(229,168,62,.11),rgba(89,37,102,.05) 36%,transparent 69%);filter:blur(16px);pointer-events:none;z-index:0}': '.machine-shell::before{display:grid;content:"♛";place-items:center;position:absolute;left:50%;bottom:6%;width:min(36vw,260px);height:min(36vw,260px);transform:translateX(-50%);border:1px solid rgba(222,173,76,.08);border-radius:50%;color:rgba(245,205,112,.055);font-size:min(17vw,120px);line-height:1;background:radial-gradient(circle,rgba(209,148,53,.055),rgba(79,32,92,.035) 34%,transparent 66%);box-shadow:0 0 0 28px rgba(216,159,62,.018),0 0 0 56px rgba(133,65,146,.014);pointer-events:none;z-index:0}',
+            '.machine-shell{height:100%;min-height:0;padding:6px 0;border-radius:14px;align-items:flex-start;background:radial-gradient(ellipse at 50% 22%,rgba(91,44,114,.25),transparent 44%),radial-gradient(ellipse at 50% 83%,rgba(177,93,27,.13),transparent 44%),linear-gradient(180deg,#100c14,#060508 72%)}': '.machine-shell{height:100%;min-height:0;padding:6px 0;border-radius:14px;align-items:flex-start;background:radial-gradient(ellipse at 50% 20%,rgba(91,44,114,.26),transparent 40%),linear-gradient(118deg,transparent 0 46%,rgba(255,214,124,.018) 50%,transparent 54%),radial-gradient(ellipse at 50% 82%,rgba(177,93,27,.11),transparent 43%),linear-gradient(180deg,#100c14,#060508 72%)}'
+          }
+          for old,new in swaps.items():
+              if old not in s: raise SystemExit('missing CSS anchor: '+old[:100])
+              s=s.replace(old,new)
+          p.write_text(s)
+          PY
+
+      - name: Commit polish
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add casino/hotfix.css
+          git commit -m 'style: fill mobile vault space and reduce CSS compositor cost'
+          git push origin HEAD:royal-arc-v2-premium
