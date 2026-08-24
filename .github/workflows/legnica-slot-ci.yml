@@ -5,7 +5,7 @@ on:
     branches:
       - legnica-castle-slot-pro
     paths:
-      - 'casino/**'
+      - 'casino/legnica/**'
       - '.github/workflows/legnica-slot-ci.yml'
   workflow_dispatch:
 
@@ -26,24 +26,27 @@ jobs:
 
       - name: Validate required source
         run: |
-          test -f casino/index.html
-          grep -q '<!doctype html>' casino/index.html
-          grep -q 'id="gameRoot"' casino/index.html
-          grep -q 'function spin()' casino/index.html
+          test -f casino/legnica/index.html
+          grep -q '<!doctype html>' casino/legnica/index.html
+          grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
+          grep -q 'id="reels"' casino/legnica/index.html
+          grep -q 'function spin()' casino/legnica/index.html
 
       - name: Validate HTML parse
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
-          p = Path('casino/index.html')
+          p = Path('casino/legnica/index.html')
           data = p.read_text(encoding='utf-8')
           class Parser(HTMLParser):
               pass
           Parser().feed(data)
           assert '<html' in data.lower() and '</html>' in data.lower()
           assert '<script' in data.lower() and '</script>' in data.lower()
-          print('HTML parse OK')
+          assert data.count('class="tower') >= 2
+          assert 'grid-template-columns:repeat(5,1fr)' in data
+          print('Legnica HTML parse OK')
           PY
 
       - name: Validate embedded JavaScript syntax
@@ -51,17 +54,17 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import re
-          html = Path('casino/index.html').read_text(encoding='utf-8')
+          html = Path('casino/legnica/index.html').read_text(encoding='utf-8')
           scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, flags=re.S|re.I)
           assert scripts, 'No embedded script found'
-          Path('/tmp/slot.js').write_text('\n'.join(scripts), encoding='utf-8')
-          print('Extracted JS')
+          Path('/tmp/legnica-slot.js').write_text('\n'.join(scripts), encoding='utf-8')
+          print('Extracted embedded JS')
           PY
-          node --check /tmp/slot.js
+          node --check /tmp/legnica-slot.js
 
       - name: Smoke-test static delivery
         run: |
-          python -m http.server 4173 --directory casino >/tmp/legnica-slot-http.log 2>&1 &
+          python -m http.server 4173 --directory casino/legnica >/tmp/legnica-slot-http.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           for i in {1..15}; do
@@ -70,13 +73,14 @@ jobs:
             fi
             sleep 1
           done
-          grep -q 'Royal Arc' /tmp/legnica-slot.html
-          grep -q 'gameRoot' /tmp/legnica-slot.html
+          grep -q 'BRAMA PIASTÓW' /tmp/legnica-slot.html
+          grep -q 'bonusFill' /tmp/legnica-slot.html
+          grep -q 'spinBtn' /tmp/legnica-slot.html
 
       - name: Package validated slot
         run: |
           mkdir -p dist
-          cp -R casino/. dist/
+          cp -R casino/legnica/. dist/
           printf '%s\n' "commit=${GITHUB_SHA}" > dist/build-info.txt
           printf '%s\n' "branch=${GITHUB_REF_NAME}" >> dist/build-info.txt
           printf '%s\n' "validated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> dist/build-info.txt
