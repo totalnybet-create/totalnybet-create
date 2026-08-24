@@ -1,0 +1,90 @@
+name: Legnica Castle Slot CI
+
+on:
+  push:
+    branches:
+      - legnica-castle-slot-pro
+    paths:
+      - 'casino/**'
+      - '.github/workflows/legnica-slot-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legnica-slot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required source
+        run: |
+          test -f casino/index.html
+          grep -q '<!doctype html>' casino/index.html
+          grep -q 'id="gameRoot"' casino/index.html
+          grep -q 'function spin()' casino/index.html
+
+      - name: Validate HTML parse
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          p = Path('casino/index.html')
+          data = p.read_text(encoding='utf-8')
+          class Parser(HTMLParser):
+              pass
+          Parser().feed(data)
+          assert '<html' in data.lower() and '</html>' in data.lower()
+          assert '<script' in data.lower() and '</script>' in data.lower()
+          print('HTML parse OK')
+          PY
+
+      - name: Validate embedded JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('casino/index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, flags=re.S|re.I)
+          assert scripts, 'No embedded script found'
+          Path('/tmp/slot.js').write_text('\n'.join(scripts), encoding='utf-8')
+          print('Extracted JS')
+          PY
+          node --check /tmp/slot.js
+
+      - name: Smoke-test static delivery
+        run: |
+          python -m http.server 4173 --directory casino >/tmp/legnica-slot-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for i in {1..15}; do
+            if curl -fsS http://127.0.0.1:4173/ >/tmp/legnica-slot.html; then
+              break
+            fi
+            sleep 1
+          done
+          grep -q 'Royal Arc' /tmp/legnica-slot.html
+          grep -q 'gameRoot' /tmp/legnica-slot.html
+
+      - name: Package validated slot
+        run: |
+          mkdir -p dist
+          cp -R casino/. dist/
+          printf '%s\n' "commit=${GITHUB_SHA}" > dist/build-info.txt
+          printf '%s\n' "branch=${GITHUB_REF_NAME}" >> dist/build-info.txt
+          printf '%s\n' "validated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> dist/build-info.txt
+
+      - name: Upload validated build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: legnica-castle-slot-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 14
