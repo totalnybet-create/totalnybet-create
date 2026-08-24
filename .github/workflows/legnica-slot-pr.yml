@@ -2,10 +2,10 @@ name: Legnica Slot PR Check
 
 on:
   pull_request:
-    branches:
-      - royal-arc-casino
+    branches: [royal-arc-casino]
     paths:
       - 'casino/legnica/**'
+      - '.github/scripts/legnica-v3-smoke.mjs'
       - '.github/workflows/legnica-slot-ci.yml'
       - '.github/workflows/legnica-slot-pr.yml'
 
@@ -13,83 +13,48 @@ permissions:
   contents: read
 
 jobs:
-  validate-legnica-slot:
+  browser-qa-v3:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout PR merge
-        uses: actions/checkout@v4
-
-      - name: Validate PRO V2 source
+      - uses: actions/checkout@v4
+      - name: Validate V3 source
         run: |
-          test -f casino/legnica/pro-v2.html
-          grep -q '<!doctype html>' casino/legnica/pro-v2.html
-          grep -q 'BRAMA PIASTÓW' casino/legnica/pro-v2.html
-          grep -q 'id="reels"' casino/legnica/pro-v2.html
-          grep -q 'function spin()' casino/legnica/pro-v2.html
-          grep -q 'Klucze do Bramy' casino/legnica/pro-v2.html
-
-      - name: Parse HTML and validate JS syntax
-        run: |
-          python - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
-          import re
-          data = Path('casino/legnica/pro-v2.html').read_text(encoding='utf-8')
-          class Parser(HTMLParser): pass
-          Parser().feed(data)
-          assert '<html' in data.lower() and '</html>' in data.lower()
-          scripts = re.findall(r'<script[^>]*>(.*?)</script>', data, flags=re.S|re.I)
-          assert scripts
-          Path('/tmp/legnica-slot.js').write_text('\n'.join(scripts), encoding='utf-8')
-          print('PRO V2 HTML OK; embedded JS extracted')
-          PY
-          node --check /tmp/legnica-slot.js
-
-      - name: Install Playwright
+          test -f casino/legnica/index.html
+          test -f casino/legnica/v3.css
+          test -f casino/legnica/v3.js
+          grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
+          grep -q 'id="reels"' casino/legnica/index.html
+          grep -q 'id="spin"' casino/legnica/index.html
+          grep -q 'width=3840' casino/legnica/v3.css
+          grep -q 'Portal_castle_legnica.JPG' casino/legnica/v3.css
+          grep -q 'function spin()' casino/legnica/v3.js
+          node --check casino/legnica/v3.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install chromium
-
-      - name: Browser smoke and responsive screenshots
+      - name: Start static server
         run: |
-          mkdir -p qa-artifacts
-          python -m http.server 4173 --directory casino/legnica >/tmp/http.log 2>&1 &
-          PID=$!
-          trap 'kill $PID || true' EXIT
-          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/pro-v2.html >/dev/null && break || sleep 1; done
-          node <<'JS'
-          const { chromium } = require('playwright');
-          (async()=>{
-            const browser=await chromium.launch({headless:true});
-            for (const [name,w,h] of [['mobile',390,844],['desktop',1280,800]]) {
-              const page=await browser.newPage({viewport:{width:w,height:h}});
-              const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
-              await page.goto('http://127.0.0.1:4173/pro-v2.html',{waitUntil:'networkidle'});
-              await page.waitForSelector('#reels .symbol');
-              const count=await page.locator('#reels .symbol').count();
-              if(count!==15) throw new Error(`Expected 15 symbols, got ${count}`);
-              const title=await page.locator('h1').innerText();
-              if(!title.includes('BRAMA PIASTÓW')) throw new Error('Wrong title');
-              const before=await page.locator('#balanceTop').innerText();
-              await page.click('#spin');
-              await page.waitForTimeout(900);
-              const after=await page.locator('#balanceTop').innerText();
-              const status=await page.locator('#status').innerText();
-              if(before===after && !status) throw new Error('Spin did not change state');
-              if(errors.length) throw new Error(errors.join('\n'));
-              await page.screenshot({path:`qa-artifacts/legnica-${name}.png`,fullPage:true});
-              await page.close();
-            }
-            await browser.close();
-          })().catch(e=>{console.error(e);process.exit(1)});
-          JS
-
+          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v3-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/legnica-v3-http.log
+          exit 1
+      - name: Browser smoke and screenshots
+        env:
+          SLOT_URL: http://127.0.0.1:4173/
+        run: node .github/scripts/legnica-v3-smoke.mjs
       - name: Upload QA artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: legnica-slot-pro-v2-qa
+          name: legnica-v3-pr-qa
           path: qa-artifacts
           if-no-files-found: warn
           retention-days: 14
