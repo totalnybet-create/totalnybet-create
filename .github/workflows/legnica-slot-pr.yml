@@ -15,42 +15,81 @@ permissions:
 jobs:
   validate-legnica-slot:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout PR merge
         uses: actions/checkout@v4
 
-      - name: Validate source
+      - name: Validate PRO V2 source
         run: |
-          test -f casino/legnica/index.html
-          grep -q '<!doctype html>' casino/legnica/index.html
-          grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
-          grep -q 'id="reels"' casino/legnica/index.html
-          grep -q 'function spin()' casino/legnica/index.html
+          test -f casino/legnica/pro-v2.html
+          grep -q '<!doctype html>' casino/legnica/pro-v2.html
+          grep -q 'BRAMA PIASTÓW' casino/legnica/pro-v2.html
+          grep -q 'id="reels"' casino/legnica/pro-v2.html
+          grep -q 'function spin()' casino/legnica/pro-v2.html
+          grep -q 'Klucze do Bramy' casino/legnica/pro-v2.html
 
-      - name: Parse HTML and extract JS
+      - name: Parse HTML and validate JS syntax
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
           import re
-          data = Path('casino/legnica/index.html').read_text(encoding='utf-8')
+          data = Path('casino/legnica/pro-v2.html').read_text(encoding='utf-8')
           class Parser(HTMLParser): pass
           Parser().feed(data)
           assert '<html' in data.lower() and '</html>' in data.lower()
           scripts = re.findall(r'<script[^>]*>(.*?)</script>', data, flags=re.S|re.I)
           assert scripts
           Path('/tmp/legnica-slot.js').write_text('\n'.join(scripts), encoding='utf-8')
-          print('HTML OK; JS extracted')
+          print('PRO V2 HTML OK; embedded JS extracted')
           PY
           node --check /tmp/legnica-slot.js
 
-      - name: Static smoke test
+      - name: Install Playwright
         run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install chromium
+
+      - name: Browser smoke and responsive screenshots
+        run: |
+          mkdir -p qa-artifacts
           python -m http.server 4173 --directory casino/legnica >/tmp/http.log 2>&1 &
           PID=$!
           trap 'kill $PID || true' EXIT
-          for i in {1..15}; do curl -fsS http://127.0.0.1:4173/ >/tmp/page.html && break || sleep 1; done
-          grep -q 'BRAMA PIASTÓW' /tmp/page.html
-          grep -q 'spinBtn' /tmp/page.html
-          grep -q 'bonusFill' /tmp/page.html
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/pro-v2.html >/dev/null && break || sleep 1; done
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            for (const [name,w,h] of [['mobile',390,844],['desktop',1280,800]]) {
+              const page=await browser.newPage({viewport:{width:w,height:h}});
+              const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
+              await page.goto('http://127.0.0.1:4173/pro-v2.html',{waitUntil:'networkidle'});
+              await page.waitForSelector('#reels .symbol');
+              const count=await page.locator('#reels .symbol').count();
+              if(count!==15) throw new Error(`Expected 15 symbols, got ${count}`);
+              const title=await page.locator('h1').innerText();
+              if(!title.includes('BRAMA PIASTÓW')) throw new Error('Wrong title');
+              const before=await page.locator('#balanceTop').innerText();
+              await page.click('#spin');
+              await page.waitForTimeout(900);
+              const after=await page.locator('#balanceTop').innerText();
+              const status=await page.locator('#status').innerText();
+              if(before===after && !status) throw new Error('Spin did not change state');
+              if(errors.length) throw new Error(errors.join('\n'));
+              await page.screenshot({path:`qa-artifacts/legnica-${name}.png`,fullPage:true});
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+
+      - name: Upload QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legnica-slot-pro-v2-qa
+          path: qa-artifacts
+          if-no-files-found: warn
+          retention-days: 14
