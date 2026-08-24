@@ -1,0 +1,10 @@
+{
+  "name": "casino-portal-cloudflare-deployer",
+  "private": true,
+  "scripts": {
+    "deploy": "bash deploy.sh"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
