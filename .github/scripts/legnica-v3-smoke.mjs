@@ -7,12 +7,14 @@ const browser = await chromium.launch({ headless: true });
 const errors = [];
 
 async function run(name, viewport) {
-  const page = await browser.newPage({ viewportSize: viewport });
+  const page = await browser.newPage({ viewport });
   page.on('pageerror', e => errors.push(`${name}: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`${name} console: ${m.text()}`); });
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('.portalPhoto');
   await page.waitForSelector('#spin');
+  const actual = page.viewportSize();
+  if (!actual || actual.width !== viewport.width || actual.height !== viewport.height) throw new Error(`${name}: wrong viewport ${JSON.stringify(actual)}`);
   const count = await page.locator('.symbol').count();
   if (count !== 15) throw new Error(`${name}: expected 15 symbols, got ${count}`);
   const before = await page.locator('#balance').innerText();
@@ -20,9 +22,9 @@ async function run(name, viewport) {
   await page.waitForTimeout(1000);
   const after = await page.locator('#balance').innerText();
   if (before === after) throw new Error(`${name}: balance did not change after spin`);
-  await page.screenshot({ path: `qa-artifacts/${name}.png`, fullPage: true });
   const overflow = await page.evaluate(() => document.documentElement.scrollHeight > innerHeight + 2 || document.documentElement.scrollWidth > innerWidth + 2);
   if (overflow) throw new Error(`${name}: viewport overflow detected`);
+  await page.screenshot({ path: `qa-artifacts/${name}.png`, fullPage: false });
   await page.close();
 }
 
