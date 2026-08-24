@@ -1,0 +1,8 @@
+/* Royal Arc mobile layout hotfix: lock canvas aspect ratio and remove letterbox/stretching. */
+.slot-app{height:100dvh;grid-template-rows:auto auto auto auto;align-content:center;overflow:hidden}
+.machine-shell{width:100%;height:auto;min-height:0;padding:42px clamp(14px,2.8vw,25px) 18px}
+.canvas-host{width:100%;height:auto;aspect-ratio:900/700;min-height:0}
+.canvas-host canvas{display:block;width:100%!important;height:100%!important;position:static!important;transform:none!important}
+.frame-title{top:28px}.frame-crown{top:0}.frame-lights{top:62px;bottom:28px}
+@media(max-width:560px){.slot-app{align-content:start;padding-top:max(5px,env(safe-area-inset-top))}.machine-shell{padding:34px 11px 14px;border-radius:16px}.frame-title{top:23px}.frame-crown{font-size:25px}.frame-lights{top:50px;bottom:20px}.status-strip{height:20px}.control-deck{min-height:70px}.spin-button{width:58px;height:58px}}
+@media(max-width:390px){.top-hud{min-height:44px}.brand-lockup strong{font-size:11px}.top-metrics>div{min-width:54px}.machine-shell{padding-top:31px}.control-deck{min-height:66px}.spin-button{width:54px;height:54px}}
