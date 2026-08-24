@@ -30,6 +30,7 @@ jobs:
         with:
           ref: casino-turnkey-base
           fetch-depth: 1
+          submodules: recursive
 
       - name: Resolve requested task
         id: task
@@ -66,19 +67,43 @@ jobs:
           set -euo pipefail
           git status --short
           git log -1 --oneline
+          git submodule status --recursive
 
-      - name: Build
+      - name: Setup Node 22
+        if: steps.task.outputs.task == 'build' || steps.task.outputs.task == 'test'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: casino/portal/package-lock.json
+
+      - name: Build portal
         if: steps.task.outputs.task == 'build'
         shell: bash
+        working-directory: casino/portal
+        env:
+          NEXT_PUBLIC_SITE_URL: https://totalnybet-create.pages.dev
+          NEXT_PUBLIC_SITE_NAME: TotalnyBet
+          NEXT_PUBLIC_SITE_TAGLINE: Social Casino
+          NEXT_PUBLIC_SITE_DESCRIPTION: TotalnyBet casino portal build
+          NEXT_PUBLIC_SUPPORT_EMAIL: support@example.invalid
+          NEXT_PUBLIC_API_URL: http://127.0.0.1
+          NEXT_PUBLIC_TENANT_SLUG: crashx
+          NEXT_PUBLIC_CRASH_REAL_MONEY: 'false'
+          NEXT_PUBLIC_REALTIME_ENABLED: 'false'
         run: |
           set -euo pipefail
           npm ci
+          npm run typecheck
+          npm run lint
           npm run build
 
-      - name: Test
+      - name: Test portal
         if: steps.task.outputs.task == 'test'
         shell: bash
+        working-directory: casino/portal
         run: |
           set -euo pipefail
           npm ci
-          if npm run | grep -qE '^  test'; then npm test; else echo 'No npm test script'; fi
+          npm run typecheck
+          npm run lint
