@@ -1,0 +1,47 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "portal": {
+      "runtime": "container",
+      "root": ".",
+      "entrypoint": "deploy/Dockerfile.portal.vercel",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "api",
+          "format": "url",
+          "env": "API_URL"
+        }
+      ]
+    },
+    "api": {
+      "runtime": "container",
+      "root": ".",
+      "entrypoint": "deploy/Dockerfile.api.vercel"
+    }
+  },
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "DB_CONNECTION": "pgsql",
+    "SESSION_DRIVER": "database",
+    "CACHE_STORE": "database",
+    "QUEUE_CONNECTION": "sync",
+    "BROADCAST_CONNECTION": "log",
+    "CRASH_BROADCAST_IMMEDIATE": "true",
+    "DEFAULT_TENANT_SLUG": "crashx",
+    "ADMIN_PANEL_PATH": "operator-console",
+    "NEXT_PUBLIC_REALTIME_ENABLED": "false",
+    "NEXT_PUBLIC_CRASH_REAL_MONEY": "false"
+  },
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": { "service": "api" } },
+    { "source": "/operator-console", "destination": { "service": "api" } },
+    { "source": "/operator-console/:path*", "destination": { "service": "api" } },
+    { "source": "/livewire/:path*", "destination": { "service": "api" } },
+    { "source": "/css/filament/:path*", "destination": { "service": "api" } },
+    { "source": "/js/filament/:path*", "destination": { "service": "api" } },
+    { "source": "/filament/:path*", "destination": { "service": "api" } },
+    { "source": "/:path*", "destination": { "service": "portal" } }
+  ]
+}
