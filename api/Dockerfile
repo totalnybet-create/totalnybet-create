@@ -9,7 +9,10 @@ WORKDIR /app
 RUN git clone https://github.com/scriptcasino/free-casino-script-api.git . \
     && git checkout "$API_COMMIT" \
     && rm -rf .git \
-    && COMPOSER_PROCESS_TIMEOUT=0 composer install --no-dev --no-interaction --prefer-source --optimize-autoloader --no-progress
+    && COMPOSER_PROCESS_TIMEOUT=0 composer install --no-dev --no-interaction --prefer-source --optimize-autoloader --no-progress \
+    && find vendor -type d -name .git -prune -exec rm -rf {} + \
+    && composer clear-cache \
+    && rm -rf /root/.composer/cache /root/.cache/composer
 COPY start-api.sh /usr/local/bin/start-api
 RUN chmod +x /usr/local/bin/start-api \
     && chown -R www-data:www-data storage bootstrap/cache
