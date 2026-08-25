@@ -5,13 +5,7 @@ on:
     branches: [legnica-castle-slot-pro]
     paths:
       - 'casino/legnica/**'
-      - '.github/scripts/legnica-v3-smoke.mjs'
-      - '.github/workflows/legnica-slot-ci.yml'
-  pull_request:
-    branches: [royal-arc-casino]
-    paths:
-      - 'casino/legnica/**'
-      - '.github/scripts/legnica-v3-smoke.mjs'
+      - '.github/scripts/legnica-v4-smoke.mjs'
       - '.github/workflows/legnica-slot-ci.yml'
   workflow_dispatch:
 
@@ -19,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: legnica-slot-${{ github.ref }}
+  group: legnica-slot-v4-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,19 +22,19 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Validate V3 files
+      - name: Validate V4 machine
         run: |
           test -f casino/legnica/index.html
-          test -f casino/legnica/v3.css
-          test -f casino/legnica/v3.js
-          grep -q 'BRAMA PIASTÓW' casino/legnica/index.html
+          test -f casino/legnica/v4.css
+          test -f casino/legnica/v4.js
+          grep -q 'V4 Cabinet' casino/legnica/index.html
+          grep -q 'class="cabinet"' casino/legnica/index.html
           grep -q 'id="reels"' casino/legnica/index.html
           grep -q 'id="spin"' casino/legnica/index.html
-          grep -q 'width=3840' casino/legnica/v3.css
-          grep -q 'Portal_castle_legnica.JPG' casino/legnica/v3.css
-          grep -q 'function spin()' casino/legnica/v3.js
-          node --check casino/legnica/v3.js
-      - name: Validate HTML parse
+          grep -q 'grid-template-columns:repeat(5,1fr)' casino/legnica/v4.css
+          grep -q 'function spin()' casino/legnica/v4.js
+          node --check casino/legnica/v4.js
+      - name: Parse HTML
         run: |
           python - <<'PY'
           from html.parser import HTMLParser
@@ -48,9 +42,10 @@ jobs:
           s=Path('casino/legnica/index.html').read_text(encoding='utf-8')
           class P(HTMLParser): pass
           P().feed(s)
-          assert 'v3.css' in s and 'v3.js' in s
-          assert s.count('class="payline') >= 5
-          print('Legnica V3 HTML OK')
+          assert 'v4.css' in s and 'v4.js' in s
+          assert 'class="pillar left"' in s and 'class="pillar right"' in s
+          assert s.count('class="line ') >= 5
+          print('Legnica V4 HTML OK')
           PY
       - uses: actions/setup-node@v4
         with:
@@ -61,31 +56,30 @@ jobs:
           npx playwright install chromium
       - name: Start slot server
         run: |
-          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v3-http.log 2>&1 &
-          echo $! > /tmp/legnica-v3-http.pid
+          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v4-http.log 2>&1 &
           for i in {1..30}; do
             curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
             sleep 1
           done
-          cat /tmp/legnica-v3-http.log
+          cat /tmp/legnica-v4-http.log
           exit 1
-      - name: Browser smoke + screenshots
+      - name: Browser QA + screenshots
         env:
           SLOT_URL: http://127.0.0.1:4173/
-        run: node .github/scripts/legnica-v3-smoke.mjs
+        run: node .github/scripts/legnica-v4-smoke.mjs
       - name: Package validated slot
         run: |
           mkdir -p dist
           cp -R casino/legnica/. dist/
           printf '%s\n' "commit=${GITHUB_SHA}" > dist/build-info.txt
           printf '%s\n' "validated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> dist/build-info.txt
-      - name: Upload QA artifacts
+      - name: Upload V4 QA artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: legnica-v3-qa-${{ github.sha }}
+          name: legnica-v4-qa-${{ github.sha }}
           path: |
-            qa-artifacts
+            qa-artifacts-v4
             dist
           if-no-files-found: warn
           retention-days: 14
