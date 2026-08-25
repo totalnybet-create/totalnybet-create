@@ -3,33 +3,60 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#050608">
-<title>Brama Piastów — Ultra</title>
-<link rel="stylesheet" href="v3.css">
+<meta name="theme-color" content="#040506">
+<title>Brama Piastów — V4 Cabinet</title>
+<link rel="stylesheet" href="v4.css">
 </head>
 <body>
 <main class="scene" id="scene">
-  <canvas id="fx"></canvas><div class="noise"></div>
-  <header class="top">
-    <div class="identity"><div class="sigil"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff2ac"/><stop offset="1" stop-color="#b76b13"/></linearGradient></defs><path d="M12 47 8 20l13 10 11-20 11 20 13-10-4 27z" fill="url(#sg)"/><path d="M14 48h36v7H14z" rx="3" fill="#d59a31"/></svg></div><div class="idtxt"><b>BRAMA PIASTÓW</b><span>Legnica · Legend Series</span></div></div>
-    <div class="topRight"><div class="chip jack"><div><small>JACKPOT</small><strong id="jackpot">1 284 750</strong></div></div><div class="chip"><span class="coin"></span><div><small>SALDO</small><strong id="balance">10 000</strong></div></div></div>
+<canvas class="fx" id="fx"></canvas>
+<div class="cabinet" id="cabinet">
+  <div class="balanceChip">
+    <div class="chip gold"><small>JACKPOT</small><b id="jackpot">1 284 750</b></div>
+    <div class="chip"><small>SALDO</small><b id="balance">10 000</b></div>
+  </div>
+  <div class="free" id="freePill">FREE SPINS × <span id="freeCount">0</span></div>
+  <header class="marquee">
+    <div class="eyebrow">Piast Legacy · Legnica</div>
+    <h1>BRAMA PIASTÓW</h1>
+    <div class="sub">5×3 · 20 LINII · GATE BONUS</div>
   </header>
-  <div class="heroLabel"><div class="over">Piast Legacy · Premium Slot</div><h1>Brama Piastów</h1><div class="sub">5×3 · 20 linii · Gate Bonus · Free Spins</div></div>
-  <div class="freePill" id="freePill">FREE SPINS · <span id="freeCount">0</span></div>
-  <section class="world" aria-label="Automat Brama Piastów">
-    <div class="portalAura"></div><div class="portalPhoto"></div>
-    <div class="reelRig" id="rig"><div class="reelShade"></div><div class="reelShade bottom"></div><div class="payline p1"></div><div class="payline p2"></div><div class="payline p3"></div><div class="payline p4"></div><div class="payline p5"></div><div class="reels" id="reels"></div></div>
-    <div class="portalHud"><div class="status" id="status">Dotknij SPIN, aby otworzyć bramę</div><div class="bonus"><small>GATE CHARGE · <span id="keys">0/3</span></small><div class="bonusBar"><i id="bonusBar"></i></div></div></div>
+  <section class="body">
+    <aside class="pillar left"></aside>
+    <div class="core">
+      <div class="portal">
+        <div class="crownEmblem" aria-hidden="true">
+          <svg viewBox="0 0 120 100"><defs><linearGradient id="cg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fff1a8"/><stop offset=".4" stop-color="#e4a930"/><stop offset="1" stop-color="#7e4608"/></linearGradient></defs><path d="M18 72 13 30l25 20L60 10l22 40 25-20-5 42z" fill="url(#cg)" stroke="#5f3507" stroke-width="3"/><path d="M17 72h86v15H17z" rx="6" fill="#b87515"/><circle cx="60" cy="12" r="7" fill="#fff2ae"/></svg>
+        </div>
+        <div class="reelRig" id="rig">
+          <div class="reels" id="reels"></div>
+          <div class="scan"></div>
+          <div class="paylines"><i class="line l1"></i><i class="line l2"></i><i class="line l3"></i><i class="line l4"></i><i class="line l5"></i></div>
+        </div>
+        <div class="hud">
+          <div class="status" id="status">Gotowy do gry</div>
+          <div></div>
+          <div class="gate"><span>GATE <b id="keys">0/3</b></span><span class="gateBar"><i id="gateFill"></i></span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="pillar right"></aside>
   </section>
   <section class="controls">
-    <div class="leftControls"><div class="betCtl"><button id="betMinus" aria-label="Zmniejsz stawkę">−</button><div><small>STAWKA</small><b id="bet">50</b></div><button id="betPlus" aria-label="Zwiększ stawkę">+</button></div></div>
-    <div class="metric"><span>TRYB</span><b id="mode">20 LINII</b></div>
+    <div class="leftCtl">
+      <div class="betBox"><button id="betMinus">−</button><div class="metric"><small>STAWKA</small><b id="bet">50</b></div><button id="betPlus">+</button></div>
+      <div class="metric"><small>TRYB</small><b>20 LINII</b></div>
+    </div>
     <button class="spinBtn" id="spin">SPIN</button>
-    <div class="metric win"><span>WYGRANA</span><b id="win">0</b></div>
-    <div class="rightControls"><div class="smallBtns"><button class="btn" id="turbo">TURBO</button><button class="btn" id="sound">DŹWIĘK</button><button class="btn" id="auto">AUTO ×10</button></div></div>
+    <div class="rightCtl">
+      <div class="metric"><small>WYGRANA</small><b id="win">0</b></div>
+      <button class="small" id="turbo">TURBO</button>
+      <button class="small" id="sound">DŹWIĘK</button>
+      <button class="small" id="auto">AUTO</button>
+    </div>
   </section>
-  <div class="credits">Castle photo: MOs810 / CC BY 4.0 · Renaissance portal: TomekJSz / Public Domain · visual treatment modified for game UI</div>
+</div>
 </main>
-<script src="v3.js" defer></script>
+<script src="v4.js" defer></script>
 </body>
 </html>
