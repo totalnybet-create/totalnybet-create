@@ -5,29 +5,29 @@ on:
     branches: [royal-arc-casino]
     paths:
       - 'casino/legnica/**'
-      - '.github/scripts/legnica-v4-smoke.mjs'
+      - '.github/scripts/legnica-v5-smoke.mjs'
       - '.github/workflows/legnica-slot-pr.yml'
 
 permissions:
   contents: read
 
 jobs:
-  browser-qa-v4:
+  browser-qa-v5:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Validate V4 machine
+      - name: Validate V5 gate machine
         run: |
           test -f casino/legnica/index.html
-          test -f casino/legnica/v4.css
-          test -f casino/legnica/v4.js
-          grep -q 'V4 Cabinet' casino/legnica/index.html
-          grep -q 'class="cabinet"' casino/legnica/index.html
+          test -f casino/legnica/v5.css
+          test -f casino/legnica/v5.js
+          grep -q 'V5 Gate' casino/legnica/index.html
+          grep -q 'class="machine"' casino/legnica/index.html
           grep -q 'id="reels"' casino/legnica/index.html
           grep -q 'id="spin"' casino/legnica/index.html
-          grep -q 'function spin()' casino/legnica/v4.js
-          node --check casino/legnica/v4.js
+          grep -q 'function spin()' casino/legnica/v5.js
+          node --check casino/legnica/v5.js
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -37,22 +37,19 @@ jobs:
           npx playwright install chromium
       - name: Start static server
         run: |
-          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v4-pr.log 2>&1 &
-          for i in {1..30}; do
-            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
-            sleep 1
-          done
-          cat /tmp/legnica-v4-pr.log
+          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v5-pr.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/legnica-v5-pr.log
           exit 1
       - name: Browser QA + screenshots
         env:
           SLOT_URL: http://127.0.0.1:4173/
-        run: node .github/scripts/legnica-v4-smoke.mjs
-      - name: Upload V4 QA artifacts
+        run: node .github/scripts/legnica-v5-smoke.mjs
+      - name: Upload V5 QA artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: legnica-v4-pr-qa
-          path: qa-artifacts-v4
+          name: legnica-v5-pr-qa
+          path: qa-artifacts-v5
           if-no-files-found: warn
           retention-days: 14
