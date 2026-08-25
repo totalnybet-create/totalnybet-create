@@ -1,0 +1,61 @@
+name: Legnica Castle Slot CI
+
+on:
+  push:
+    branches: [legnica-castle-slot-pro]
+    paths:
+      - 'casino/legnica/**'
+      - '.github/scripts/legnica-v5-smoke.mjs'
+      - '.github/workflows/legnica-slot-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legnica-slot-v5-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate V5 gate machine
+        run: |
+          test -f casino/legnica/index.html
+          test -f casino/legnica/v5.css
+          test -f casino/legnica/v5.js
+          grep -q 'V5 Gate' casino/legnica/index.html
+          grep -q 'class="machine"' casino/legnica/index.html
+          grep -q 'id="reels"' casino/legnica/index.html
+          grep -q 'id="spin"' casino/legnica/index.html
+          grep -q 'Portal_castle_legnica.JPG' casino/legnica/v5.css
+          grep -q 'function spin()' casino/legnica/v5.js
+          node --check casino/legnica/v5.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install chromium
+      - name: Start slot server
+        run: |
+          python3 -m http.server 4173 --directory casino/legnica >/tmp/legnica-v5-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/legnica-v5-http.log
+          exit 1
+      - name: Browser QA + screenshots
+        env:
+          SLOT_URL: http://127.0.0.1:4173/
+        run: node .github/scripts/legnica-v5-smoke.mjs
+      - name: Upload V5 QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legnica-v5-qa-${{ github.sha }}
+          path: qa-artifacts-v5
+          if-no-files-found: warn
+          retention-days: 14
