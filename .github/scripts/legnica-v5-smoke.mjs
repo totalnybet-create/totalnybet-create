@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs/promises';
+const url=process.env.SLOT_URL||'http://127.0.0.1:4173/';
+await fs.mkdir('qa-artifacts-v5',{recursive:true});
+const browser=await chromium.launch({headless:true});
+async function run(name,width,height){
+ const page=await browser.newPage({viewport:{width,height}});const errors=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+ await page.waitForSelector('#reels .cell');
+ if(await page.locator('#reels .cell').count()!==15)throw new Error(`${name}: wrong reel cell count`);
+ const overflow=await page.evaluate(()=>document.documentElement.scrollHeight>innerHeight+2||document.documentElement.scrollWidth>innerWidth+2);if(overflow)throw new Error(`${name}: overflow`);
+ const before=await page.locator('#balance').innerText();await page.click('#spin');await page.waitForTimeout(1300);const after=await page.locator('#balance').innerText();if(before===after)throw new Error(`${name}: spin state did not change`);
+ if(errors.length)throw new Error(errors.join(' | '));await page.screenshot({path:`qa-artifacts-v5/${name}.png`,fullPage:true});await page.close();
+}
+await run('mobile-390x844',390,844);await run('desktop-1280x800',1280,800);await browser.close();console.log('Legnica V5 gate browser QA OK');
