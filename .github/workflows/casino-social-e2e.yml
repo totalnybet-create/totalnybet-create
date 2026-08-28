@@ -1,0 +1,54 @@
+name: Casino Social E2E
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - casino-turnkey-social-ready
+    paths:
+      - '.github/workflows/casino-social-e2e.yml'
+
+jobs:
+  live-api-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Register, verify wallet, spin and block withdrawal
+        shell: bash
+        env:
+          API: https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api
+        run: |
+          set -euo pipefail
+          USERNAME="ci_$(date +%s)_${RANDOM}"
+          PASSWORD="Sedlar-CI-${RANDOM}-A9!"
+
+          register="$(curl -fsS -X POST "$API/api/v1/auth/register" \
+            -H 'content-type: application/json' \
+            --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\",\"password_confirmation\":\"$PASSWORD\"}")"
+
+          TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); print(d["token"])' <<<"$register")"
+          START="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d["user"]["wallet"]["balance_minor"] == 250000; print(d["user"]["wallet"]["balance_minor"])' <<<"$register")"
+          test "$START" = "250000"
+
+          wallet="$(curl -fsS "$API/api/v1/wallet" -H "authorization: Bearer $TOKEN")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["wallet"]["currency"] == "CHIP"; assert d["wallet"]["balance_minor"] == 250000' <<<"$wallet"
+
+          login="$(curl -fsS -X POST "$API/api/v1/auth/login" \
+            -H 'content-type: application/json' \
+            --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")"
+          LOGIN_TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); print(d["token"])' <<<"$login")"
+
+          spin="$(curl -fsS -X POST "$API/api/v1/games/royal-arc/spin" \
+            -H 'content-type: application/json' \
+            -H "authorization: Bearer $LOGIN_TOKEN" \
+            --data '{"bet_minor":100,"free_spin":false}')"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["game"] == "royal_arc"; assert d["play_money"] is True; assert len(d["matrix"]) == 5; assert isinstance(d["balance_minor"], int)' <<<"$spin"
+
+          code="$(curl -sS -o /tmp/withdraw.json -w '%{http_code}' -X POST "$API/api/v1/wallet/withdraw" \
+            -H 'content-type: application/json' \
+            -H "authorization: Bearer $LOGIN_TOKEN" \
+            --data '{"amount":1}')"
+          test "$code" = "410"
+          python -c 'import json; d=json.load(open("/tmp/withdraw.json")); assert d["code"] == "PLAY_MONEY_ONLY"'
+
+          echo "E2E_OK username=$USERNAME start_balance_minor=$START"
