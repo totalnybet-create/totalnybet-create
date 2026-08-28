@@ -6,11 +6,20 @@ RUN git clone https://github.com/scriptcasino/free-casino-script-portal.git . \
     && git checkout "$PORTAL_COMMIT" \
     && rm -rf .git
 RUN node -e "const fs=require('fs'); const p='lib/env.ts'; let s=fs.readFileSync(p,'utf8'); const a='NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,'; const b='NEXT_PUBLIC_API_URL: process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL,'; if(!s.includes(a)) throw new Error('API env anchor not found'); fs.writeFileSync(p,s.replace(a,b));"
-ENV NEXT_PUBLIC_REALTIME_ENABLED=false NEXT_PUBLIC_CRASH_REAL_MONEY=false NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
+    NEXT_PUBLIC_REALTIME_ENABLED=false \
+    NEXT_PUBLIC_CRASH_REAL_MONEY=false \
+    NEXT_TELEMETRY_DISABLED=1
 RUN npm ci --include=dev && npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 NEXT_PUBLIC_REALTIME_ENABLED=false NEXT_PUBLIC_CRASH_REAL_MONEY=false
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
+    NEXT_PUBLIC_REALTIME_ENABLED=false \
+    NEXT_PUBLIC_CRASH_REAL_MONEY=false
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
