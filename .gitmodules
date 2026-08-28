@@ -1,8 +1,6 @@
-[submodule "casino/api"]
-	path = casino/api
-	url = https://github.com/scriptcasino/free-casino-script-api.git
-	branch = main
-[submodule "casino/portal"]
-	path = casino/portal
-	url = https://github.com/scriptcasino/free-casino-script-portal.git
-	branch = main
+[submodule "casino/vendor/elite-poker"]
+	path = casino/vendor/elite-poker
+	url = https://github.com/opadips/Elite-Poker.git
+[submodule "casino/vendor/react-casino-roulette"]
+	path = casino/vendor/react-casino-roulette
+	url = https://github.com/IvanAdmaers/react-casino-roulette.git
