@@ -1,0 +1,30 @@
+name: Casino Social API Test
+
+on:
+  push:
+    branches:
+      - casino-turnkey-social-ready
+    paths:
+      - 'casino/api-service/**'
+      - 'casino/api-overlay/**'
+      - '.github/workflows/casino-social-api-test.yml'
+  workflow_dispatch:
+
+jobs:
+  api-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build social API image
+        run: docker build -f casino/api-service/Dockerfile casino -t casino-social-api:test
+      - name: Verify play-money routes and withdrawal removal
+        run: |
+          docker run --rm --entrypoint sh casino-social-api:test -lc "grep -q \"wallet/rewarded-ad\" routes/social-casino.php"
+          if docker run --rm --entrypoint sh casino-social-api:test -lc "grep -q \"wallet/withdraw\" routes/api.php"; then
+            echo 'Withdrawal route is still present' >&2
+            exit 1
+          fi
+      - name: Verify social wallet overlay
+        run: |
+          docker run --rm --entrypoint sh casino-social-api:test -lc "grep -q \"STARTING_VIRTUAL_CHIPS\" app/Services/Wallet/WalletProvisionService.php"
+          docker run --rm --entrypoint sh casino-social-api:test -lc "grep -q \"rewarded_ad\" app/Services/Wallet/RewardedAdCreditService.php"
