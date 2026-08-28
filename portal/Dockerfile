@@ -3,7 +3,9 @@ ARG PORTAL_COMMIT=2ddcd09a7693fb4bcf856ba934c6c0836094d763
 ARG OVERLAY_COMMIT=2121ebbe2cfb8800d0999f003b1947f9c2018ec8
 ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
-ARG BRAND_COMMIT=1a52cc500bde19e00d27f550a22f828cdd276b42
+ARG GAMES_COMMIT=0ed5afa96275fbf038d65f9cc5f586f227a4486e
+ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
+ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -31,28 +33,59 @@ RUN git clone --depth 1 --branch royal-arc-casino https://github.com/totalnybet-
     && node /tmp/royal-arc-overlay.mjs \
     && rm /tmp/royal-arc-overlay.mjs
 
+RUN git clone https://github.com/opadips/Elite-Poker.git /tmp/elite-poker \
+    && cd /tmp/elite-poker \
+    && git checkout "$ELITE_POKER_COMMIT" \
+    && cd frontend \
+    && sed -i 's/BrowserRouter/HashRouter/g' src/App.jsx \
+    && sed -i 's#new WebSocket(`${protocol}://${host}:${WS_PORT}`)#new WebSocket(`${protocol}://${host}/api/games/poker/ws`)#' src/App.jsx \
+    && sed -i 's/Elite Poker/Persone Royale Poker/g' src/App.jsx \
+    && sed -i "s/export default defineConfig({/export default defineConfig({\\n  base: '\/poker\/',/" vite.config.js \
+    && npm install \
+    && npm run build \
+    && cd /app \
+    && mkdir -p public/poker lib/poker-engine \
+    && cp -R /tmp/elite-poker/frontend/dist/. public/poker/ \
+    && cp -R /tmp/elite-poker/backend/. lib/poker-engine/ \
+    && rm -rf /tmp/elite-poker
+
+RUN git clone https://github.com/IvanAdmaers/react-casino-roulette.git /tmp/roulette \
+    && cd /tmp/roulette \
+    && git checkout "$ROULETTE_COMMIT" \
+    && npm ci \
+    && npm run build \
+    && cd example \
+    && npm install \
+    && npm run build \
+    && cd /app \
+    && mkdir -p public/roulette \
+    && cp -R /tmp/roulette/example/dist/. public/roulette/ \
+    && rm -rf /tmp/roulette
+
 RUN wget -qO /tmp/portal-polish-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${POLISH_COMMIT}/casino/portal-service/portal-polish-overlay.mjs" \
     && node /tmp/portal-polish-overlay.mjs \
     && rm /tmp/portal-polish-overlay.mjs
 
-RUN wget -qO /tmp/social-loading.tsx "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${BRAND_COMMIT}/casino/portal-service/social-loading.tsx" \
-    && wget -qO /tmp/siedlar-brand-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${BRAND_COMMIT}/casino/portal-service/siedlar-brand-overlay.mjs" \
-    && cp /tmp/social-loading.tsx 'app/[locale]/loading.tsx' \
-    && node /tmp/siedlar-brand-overlay.mjs \
-    && rm /tmp/siedlar-brand-overlay.mjs
+RUN wget -qO /tmp/persone-brand-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${GAMES_COMMIT}/casino/portal-service/persone-brand-overlay.mjs" \
+    && wget -qO /tmp/poker-roulette-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${GAMES_COMMIT}/casino/portal-service/poker-roulette-overlay.mjs" \
+    && node /tmp/persone-brand-overlay.mjs \
+    && node /tmp/poker-roulette-overlay.mjs \
+    && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs
 
-ENV NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
-    NEXT_PUBLIC_SITE_NAME="SIEDLAR CASINO ROYALE" \
+ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
+    NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="SIEDLAR CASINO ROYALE is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
-    NEXT_PUBLIC_SUPPORT_EMAIL=support@sedlarcasino.example \
+    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SUPPORT_EMAIL=support@personeroyale.pl \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
-    NEXT_PUBLIC_TENANT_SLUG=sedlar-casino \
-    NEXT_PUBLIC_REALTIME_ENABLED=false \
+    NEXT_PUBLIC_TENANT_SLUG=persone-royale \
+    NEXT_PUBLIC_REALTIME_ENABLED=true \
     NEXT_PUBLIC_CRASH_REAL_MONEY=false \
     NEXT_TELEMETRY_DISABLED=1
 
-RUN npm ci --include=dev && npm run build
+RUN npm ci --include=dev \
+    && npm install @vercel/functions@latest --save-exact \
+    && npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
@@ -60,14 +93,14 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
-    NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
-    NEXT_PUBLIC_SITE_NAME="SIEDLAR CASINO ROYALE" \
+    NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
+    NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="SIEDLAR CASINO ROYALE is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
-    NEXT_PUBLIC_SUPPORT_EMAIL=support@sedlarcasino.example \
+    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SUPPORT_EMAIL=support@personeroyale.pl \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
-    NEXT_PUBLIC_TENANT_SLUG=sedlar-casino \
-    NEXT_PUBLIC_REALTIME_ENABLED=false \
+    NEXT_PUBLIC_TENANT_SLUG=persone-royale \
+    NEXT_PUBLIC_REALTIME_ENABLED=true \
     NEXT_PUBLIC_CRASH_REAL_MONEY=false
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
