@@ -12,7 +12,8 @@ WORKDIR /app
 
 RUN git clone https://github.com/scriptcasino/free-casino-script-portal.git . \
     && git checkout "$PORTAL_COMMIT" \
-    && rm -rf .git
+    && rm -rf .git \
+    && node -e "const fs=require('fs'); const p='lib/request-public-origin.ts'; let s=fs.readFileSync(p,'utf8'); const a='if (proto === \"https\" && port === 3000) {\\n      port = defaultPort;\\n    }'; const b=a+'\\n\\n    /** Proxies can report the HTTP listener port while the public edge is HTTPS. */\\n    if ((proto === \"https\" && port === 80) || (proto === \"http\" && port === 443)) {\\n      port = defaultPort;\\n    }'; if(!s.includes(a)) throw new Error('redirect origin anchor not found'); fs.writeFileSync(p,s.replace(a,b));"
 
 RUN wget -qO /tmp/social-home.tsx "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${OVERLAY_COMMIT}/casino/portal-service/social-home.tsx" \
     && wget -qO /tmp/social-footer.tsx "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${OVERLAY_COMMIT}/casino/portal-service/social-footer.tsx" \
