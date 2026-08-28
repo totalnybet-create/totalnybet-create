@@ -34,13 +34,52 @@ if (fs.existsSync(assetsPath)) {
 const brandLockup = path.join(root, 'components/layout/BrandLockup.tsx');
 if (fs.existsSync(path.dirname(brandLockup))) {
   fs.writeFileSync(brandLockup, `import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { ROUTES } from "@/lib/paths";
+import { cn } from "@/lib/cn";
 
-export function BrandLockup({ size = "md", className = "" }: { size?: "sm" | "md" | "lg"; className?: string }) {
-  const sizes = { sm: "h-10 w-[148px]", md: "h-12 w-[188px]", lg: "h-16 w-[250px]" };
+type Size = "sm" | "md" | "lg";
+const SIZE_MAP: Record<Size, string> = {
+  sm: "h-9 w-[138px]",
+  md: "h-11 w-[176px]",
+  lg: "h-14 w-[232px]",
+};
+
+export function BrandLockup({
+  size = "md",
+  href = ROUTES.home,
+  showWordmark = true,
+  wordmarkClassName,
+  onClick,
+  className,
+  priority = false,
+}: {
+  size?: Size;
+  href?: string;
+  showWordmark?: boolean;
+  wordmarkClassName?: string;
+  onClick?: () => void;
+  className?: string;
+  priority?: boolean;
+}) {
+  const image = (
+    <Image
+      src="/assets/brand/persone-royale.svg"
+      alt="Persone Royale Casino"
+      width={960}
+      height={260}
+      priority={priority}
+      className={cn(SIZE_MAP[size], "object-contain drop-shadow-[0_0_14px_rgba(247,215,123,0.28)]", !showWordmark && "max-w-[64px]", wordmarkClassName)}
+    />
+  );
+
+  if (!href) {
+    return <span className={cn("inline-flex items-center", className)}>{image}</span>;
+  }
+
   return (
-    <Link href="/" aria-label="Persone Royale Casino home" className={"inline-flex items-center " + className}>
-      <Image src="/assets/brand/persone-royale.svg" alt="Persone Royale Casino" width={960} height={260} priority className={sizes[size] + " object-contain drop-shadow-[0_0_14px_rgba(247,215,123,0.28)]"} />
+    <Link href={href} onClick={onClick} aria-label="Persone Royale Casino home" className={cn("inline-flex items-center transition-transform duration-200 hover:translate-y-[-1px]", className)}>
+      {image}
     </Link>
   );
 }
@@ -50,9 +89,31 @@ export function BrandLockup({ size = "md", className = "" }: { size?: "sm" | "md
 const animated = path.join(root, 'components/layout/AnimatedBrandLogo.tsx');
 if (fs.existsSync(path.dirname(animated))) {
   fs.writeFileSync(animated, `import Image from "next/image";
-export function AnimatedBrandLogo({ className = "" }: { className?: string }) {
-  return <Image src="/assets/brand/persone-royale.svg" alt="Persone Royale Casino" width={960} height={260} priority className={"object-contain " + className} />;
+import { cn } from "@/lib/cn";
+
+export function AnimatedBrandLogo({
+  className,
+  priority = false,
+  video = false,
+}: {
+  className?: string;
+  priority?: boolean;
+  video?: boolean;
+}) {
+  void video;
+  return (
+    <Image
+      src="/assets/brand/persone-royale.svg"
+      alt=""
+      fill
+      sizes="240px"
+      priority={priority}
+      aria-hidden
+      className={cn("object-contain", className)}
+    />
+  );
 }
+
 export default AnimatedBrandLogo;
 `);
 }
@@ -82,7 +143,7 @@ for (const base of ['app', 'components', 'lib']) {
       const fp = path.join(p, entry.name);
       if (entry.isDirectory()) walk(fp);
       else if (/\.(tsx?|jsx?|json)$/.test(entry.name)) {
-        let text = fs.readFileSync(fp, 'utf8');
+        const text = fs.readFileSync(fp, 'utf8');
         const next = text
           .replaceAll('SIEDLAR CASINO ROYALE', 'PERSONE ROYALE CASINO')
           .replaceAll('Siedlar Casino Royale', 'Persone Royale Casino')
