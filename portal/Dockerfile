@@ -2,6 +2,7 @@ FROM node:22-alpine AS builder
 ARG PORTAL_COMMIT=2ddcd09a7693fb4bcf856ba934c6c0836094d763
 ARG OVERLAY_COMMIT=2121ebbe2cfb8800d0999f003b1947f9c2018ec8
 ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
+ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -28,6 +29,10 @@ RUN git clone --depth 1 --branch royal-arc-casino https://github.com/totalnybet-
     && wget -qO /tmp/royal-arc-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${ROYAL_OVERLAY_COMMIT}/casino/portal-service/royal-arc-overlay.mjs" \
     && node /tmp/royal-arc-overlay.mjs \
     && rm /tmp/royal-arc-overlay.mjs
+
+RUN wget -qO /tmp/portal-polish-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${POLISH_COMMIT}/casino/portal-service/portal-polish-overlay.mjs" \
+    && node /tmp/portal-polish-overlay.mjs \
+    && rm /tmp/portal-polish-overlay.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
     NEXT_PUBLIC_SITE_NAME="SEDLAR CASINO" \
