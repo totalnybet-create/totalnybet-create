@@ -3,6 +3,7 @@ ARG PORTAL_COMMIT=2ddcd09a7693fb4bcf856ba934c6c0836094d763
 ARG OVERLAY_COMMIT=2121ebbe2cfb8800d0999f003b1947f9c2018ec8
 ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
+ARG BRAND_COMMIT=cb720f7277d28bb901cc7c163a95063a4955a76e
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -34,10 +35,16 @@ RUN wget -qO /tmp/portal-polish-overlay.mjs "https://raw.githubusercontent.com/t
     && node /tmp/portal-polish-overlay.mjs \
     && rm /tmp/portal-polish-overlay.mjs
 
+RUN wget -qO /tmp/social-loading.tsx "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${BRAND_COMMIT}/casino/portal-service/social-loading.tsx" \
+    && wget -qO /tmp/siedlar-brand-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${BRAND_COMMIT}/casino/portal-service/siedlar-brand-overlay.mjs" \
+    && cp /tmp/social-loading.tsx 'app/[locale]/loading.tsx' \
+    && node /tmp/siedlar-brand-overlay.mjs \
+    && rm /tmp/siedlar-brand-overlay.mjs
+
 ENV NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
-    NEXT_PUBLIC_SITE_NAME="SEDLAR CASINO" \
+    NEXT_PUBLIC_SITE_NAME="SIEDLAR CASINO ROYALE" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="SEDLAR CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SITE_DESCRIPTION="SIEDLAR CASINO ROYALE is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
     NEXT_PUBLIC_SUPPORT_EMAIL=support@sedlarcasino.example \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_TENANT_SLUG=sedlar-casino \
@@ -54,9 +61,9 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
     NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
-    NEXT_PUBLIC_SITE_NAME="SEDLAR CASINO" \
+    NEXT_PUBLIC_SITE_NAME="SIEDLAR CASINO ROYALE" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="SEDLAR CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SITE_DESCRIPTION="SIEDLAR CASINO ROYALE is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
     NEXT_PUBLIC_SUPPORT_EMAIL=support@sedlarcasino.example \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_TENANT_SLUG=sedlar-casino \
