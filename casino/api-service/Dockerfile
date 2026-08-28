@@ -10,8 +10,15 @@ RUN git clone https://github.com/scriptcasino/free-casino-script-api.git . \
     && git checkout "$API_COMMIT" \
     && rm -rf .git \
     && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-progress
-COPY start-api.sh /usr/local/bin/start-api
+
+# Apply our play-money API additions over the pinned upstream source.
+COPY api-overlay/app/ /app/app/
+COPY api-overlay/routes/social-casino.php /app/routes/social-casino.php
+RUN printf "\nrequire __DIR__.'/social-casino.php';\n" >> /app/routes/api.php \
+    && sed -i "/Route::post('\/wallet\/withdraw'/,+1d" /app/routes/api.php
+
+COPY api-service/start-api.sh /usr/local/bin/start-api
 RUN chmod +x /usr/local/bin/start-api && chown -R www-data:www-data storage bootstrap/cache
-ENV APP_ENV=production APP_DEBUG=false DB_CONNECTION=pgsql SESSION_DRIVER=database CACHE_STORE=database QUEUE_CONNECTION=sync BROADCAST_CONNECTION=log CRASH_BROADCAST_IMMEDIATE=true DEFAULT_TENANT_SLUG=crashx ADMIN_PANEL_PATH=operator-console
+ENV APP_ENV=production APP_DEBUG=false DB_CONNECTION=pgsql SESSION_DRIVER=database CACHE_STORE=database QUEUE_CONNECTION=sync BROADCAST_CONNECTION=log CRASH_BROADCAST_IMMEDIATE=true DEFAULT_TENANT_SLUG=crashx ADMIN_PANEL_PATH=operator-console NEXT_PUBLIC_CRASH_REAL_MONEY=false
 EXPOSE 8080
 CMD ["/usr/local/bin/start-api"]
