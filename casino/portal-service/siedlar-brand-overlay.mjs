@@ -109,7 +109,7 @@ export function BrandLockup({
     <Link
       href={href}
       onClick={onClick}
-      aria-label={`${SITE.name} home`}
+      aria-label={SITE.name + " home"}
       className={cn(
         "inline-flex items-center transition-transform duration-200 hover:translate-y-[-1px]",
         className,
