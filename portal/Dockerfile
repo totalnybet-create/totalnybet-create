@@ -4,6 +4,7 @@ ARG OVERLAY_COMMIT=2121ebbe2cfb8800d0999f003b1947f9c2018ec8
 ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
 ARG GAMES_COMMIT=0ed5afa96275fbf038d65f9cc5f586f227a4486e
+ARG STATIC_FIX_COMMIT=b11d1ede598f5f2d73ef28ad7e112cf416e8b4aa
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -68,9 +69,11 @@ RUN wget -qO /tmp/portal-polish-overlay.mjs "https://raw.githubusercontent.com/t
 
 RUN wget -qO /tmp/persone-brand-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${GAMES_COMMIT}/casino/portal-service/persone-brand-overlay.mjs" \
     && wget -qO /tmp/poker-roulette-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${GAMES_COMMIT}/casino/portal-service/poker-roulette-overlay.mjs" \
+    && wget -qO /tmp/game-static-path-fix.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${STATIC_FIX_COMMIT}/casino/portal-service/game-static-path-fix.mjs" \
     && node /tmp/persone-brand-overlay.mjs \
     && node /tmp/poker-roulette-overlay.mjs \
-    && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs
+    && node /tmp/game-static-path-fix.mjs \
+    && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs /tmp/game-static-path-fix.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
