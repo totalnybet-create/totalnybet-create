@@ -4,43 +4,14 @@
     "portal": {
       "runtime": "container",
       "root": "portal-service",
-      "entrypoint": "Dockerfile",
-      "bindings": [
-        { "type": "service", "service": "api", "format": "url", "env": "API_URL" }
-      ]
-    },
-    "api": {
-      "runtime": "container",
-      "root": ".",
-      "entrypoint": "api-service/Dockerfile"
+      "entrypoint": "Dockerfile"
     }
   },
   "env": {
-    "APP_ENV": "production",
-    "APP_DEBUG": "false",
-    "DB_CONNECTION": "pgsql",
-    "SESSION_DRIVER": "database",
-    "CACHE_STORE": "database",
-    "QUEUE_CONNECTION": "sync",
-    "BROADCAST_CONNECTION": "log",
-    "CRASH_BROADCAST_IMMEDIATE": "true",
-    "DEFAULT_TENANT_SLUG": "crashx",
-    "ADMIN_PANEL_PATH": "operator-console",
-    "STARTING_VIRTUAL_CHIPS": "2500",
-    "REWARDED_AD_CHIPS": "500",
-    "REWARDED_AD_DAILY_LIMIT": "5",
-    "REWARDED_AD_COOLDOWN_SECONDS": "900",
     "NEXT_PUBLIC_REALTIME_ENABLED": "false",
     "NEXT_PUBLIC_CRASH_REAL_MONEY": "false"
   },
   "rewrites": [
-    { "source": "/api/v1/(.*)", "destination": { "service": "api" } },
-    { "source": "/operator-console", "destination": { "service": "api" } },
-    { "source": "/operator-console/(.*)", "destination": { "service": "api" } },
-    { "source": "/livewire/(.*)", "destination": { "service": "api" } },
-    { "source": "/css/filament/(.*)", "destination": { "service": "api" } },
-    { "source": "/js/filament/(.*)", "destination": { "service": "api" } },
-    { "source": "/filament/(.*)", "destination": { "service": "api" } },
     { "source": "/(.*)", "destination": { "service": "portal" } }
   ]
 }
