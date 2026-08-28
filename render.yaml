@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: persone-royale-poker
+    runtime: docker
+    dockerfilePath: ./casino/vendor/elite-poker/backend/Dockerfile
+    dockerContext: ./casino/vendor/elite-poker/backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: POKER_ALLOWED_ORIGIN
+        value: https://www.personeroyale.pl
