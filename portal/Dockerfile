@@ -1,6 +1,7 @@
 FROM node:22-alpine AS builder
 ARG PORTAL_COMMIT=2ddcd09a7693fb4bcf856ba934c6c0836094d763
 ARG OVERLAY_COMMIT=2121ebbe2cfb8800d0999f003b1947f9c2018ec8
+ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -18,6 +19,15 @@ RUN wget -qO /tmp/social-home.tsx "https://raw.githubusercontent.com/totalnybet-
     && cp /tmp/patch-social-messages.mjs ./patch-social-messages.mjs \
     && node ./patch-social-messages.mjs \
     && rm ./patch-social-messages.mjs
+
+RUN git clone --depth 1 --branch royal-arc-casino https://github.com/totalnybet-create/totalnybet-create.git /tmp/royal \
+    && mkdir -p public/royal-arc \
+    && cp -R /tmp/royal/casino/. public/royal-arc/ \
+    && rm -rf /tmp/royal \
+    && wget -qO public/royal-arc/phaser.min.js https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js \
+    && wget -qO /tmp/royal-arc-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${ROYAL_OVERLAY_COMMIT}/casino/portal-service/royal-arc-overlay.mjs" \
+    && node /tmp/royal-arc-overlay.mjs \
+    && rm /tmp/royal-arc-overlay.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322c80-my-team-e648.vercel.app \
     NEXT_PUBLIC_SITE_NAME="SEDLAR CASINO" \
