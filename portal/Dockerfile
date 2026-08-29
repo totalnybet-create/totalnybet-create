@@ -12,6 +12,7 @@ ARG FINAL_CLEANUP_COMMIT=9dca115060a3a58856fbc254a27a90556f9ce254
 ARG ROUTE_HARDENING_COMMIT=eb70ff714202f19a0d865777072b1212cdf6d38a
 ARG DAILY_BONUS_COMMIT=9f390dc29d36a933482c701461ee137ecc67edce
 ARG LEGACY_COPY_SCRUB_COMMIT=f372e8dc7a1e0a11801f5cce9cd1d357f8fe4232
+ARG FULL_POLISH_COMMIT=c41c7f0ef0373351701e6fcfffc6c85f205d2b6b
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -109,10 +110,15 @@ RUN wget -qO /tmp/legacy-payment-copy-scrub.mjs "https://raw.githubusercontent.c
     && node /tmp/legacy-payment-copy-scrub.mjs \
     && rm /tmp/legacy-payment-copy-scrub.mjs
 
+RUN wget -qO /tmp/messages.pl.full.json "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_COMMIT}/casino/portal-service/messages.pl.full.json" \
+    && wget -qO /tmp/full-polish-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_COMMIT}/casino/portal-service/full-polish-overlay.mjs" \
+    && node /tmp/full-polish-overlay.mjs /tmp/messages.pl.full.json \
+    && rm /tmp/messages.pl.full.json /tmp/full-polish-overlay.mjs
+
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
-    NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SITE_TAGLINE="Kasyno społecznościowe — Play Money" \
+    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO to kasyno społecznościowe z wirtualnymi żetonami. Bez wpłat, wypłat i wartości pieniężnej." \
     NEXT_PUBLIC_SUPPORT_EMAIL=support@personeroyale.pl \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_TENANT_SLUG=persone-royale \
@@ -133,8 +139,8 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
-    NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
-    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO is a play-money social casino with virtual chips only. No deposits, withdrawals or cash value." \
+    NEXT_PUBLIC_SITE_TAGLINE="Kasyno społecznościowe — Play Money" \
+    NEXT_PUBLIC_SITE_DESCRIPTION="PERSONE ROYALE CASINO to kasyno społecznościowe z wirtualnymi żetonami. Bez wpłat, wypłat i wartości pieniężnej." \
     NEXT_PUBLIC_SUPPORT_EMAIL=support@personeroyale.pl \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_TENANT_SLUG=persone-royale \
