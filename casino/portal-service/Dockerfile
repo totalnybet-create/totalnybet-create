@@ -10,6 +10,8 @@ COPY social-loading.tsx /tmp/social-loading.tsx
 COPY patch-social-messages.mjs /tmp/patch-social-messages.mjs
 COPY siedlar-brand-overlay.mjs /tmp/siedlar-brand-overlay.mjs
 COPY SignupForm.fixed.tsx /tmp/SignupForm.fixed.tsx
+COPY VisitPing.tsx /tmp/VisitPing.tsx
+COPY visit-counter-overlay.mjs /tmp/visit-counter-overlay.mjs
 
 RUN git clone https://github.com/scriptcasino/free-casino-script-portal.git . \
     && git checkout "$PORTAL_COMMIT" \
@@ -23,6 +25,7 @@ RUN cp /tmp/social-home.tsx 'app/[locale]/(shell)/page.tsx' \
     && node ./patch-social-messages.mjs \
     && node /tmp/siedlar-brand-overlay.mjs \
     && cp /tmp/SignupForm.fixed.tsx components/auth/SignupForm.tsx \
+    && node /tmp/visit-counter-overlay.mjs \
     && rm ./patch-social-messages.mjs
 
 RUN node -e "const fs=require('fs'); const p='lib/env.ts'; let s=fs.readFileSync(p,'utf8'); const a='NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,'; const b='NEXT_PUBLIC_API_URL: process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL,'; if(!s.includes(a)) throw new Error('API env anchor not found'); fs.writeFileSync(p,s.replace(a,b));"
