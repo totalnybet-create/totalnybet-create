@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "fluid": true,
   "services": {
-    "portal_v2": {
+    "portal_next": {
       "runtime": "container",
       "root": "portal/",
       "entrypoint": "Dockerfile"
@@ -34,7 +34,7 @@
     {
       "source": "/(.*)",
       "destination": {
-        "service": "portal_v2"
+        "service": "portal_next"
       }
     }
   ]
