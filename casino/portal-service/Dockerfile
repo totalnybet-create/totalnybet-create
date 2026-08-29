@@ -9,6 +9,7 @@ COPY social-nav.ts /tmp/social-nav.ts
 COPY social-loading.tsx /tmp/social-loading.tsx
 COPY patch-social-messages.mjs /tmp/patch-social-messages.mjs
 COPY siedlar-brand-overlay.mjs /tmp/siedlar-brand-overlay.mjs
+COPY visitor-push-only-overlay.mjs /tmp/visitor-push-only-overlay.mjs
 COPY SignupForm.fixed.tsx /tmp/SignupForm.fixed.tsx
 
 RUN git clone https://github.com/scriptcasino/free-casino-script-portal.git . \
@@ -22,6 +23,7 @@ RUN cp /tmp/social-home.tsx 'app/[locale]/(shell)/page.tsx' \
     && cp /tmp/patch-social-messages.mjs ./patch-social-messages.mjs \
     && node ./patch-social-messages.mjs \
     && node /tmp/siedlar-brand-overlay.mjs \
+    && node /tmp/visitor-push-only-overlay.mjs \
     && cp /tmp/SignupForm.fixed.tsx components/auth/SignupForm.tsx \
     && rm ./patch-social-messages.mjs
 
