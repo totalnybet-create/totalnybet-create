@@ -16,5 +16,39 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - name: Build final portal container
-        run: docker build --progress=plain -f portal/Dockerfile portal
+        run: docker build --progress=plain -t persone-royale-portal-qa -f portal/Dockerfile portal
+
+      - name: Smoke-test Polish portal and game assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name persone-royale-portal-qa -p 3000:3000 persone-royale-portal-qa
+          trap 'docker rm -f persone-royale-portal-qa >/dev/null 2>&1 || true' EXIT
+
+          ready=0
+          for _ in $(seq 1 30); do
+            if curl -fsS --max-time 3 http://127.0.0.1:3000/pl >/tmp/persone-home.html; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = "1"
+
+          grep -qi 'PERSONE ROYALE' /tmp/persone-home.html
+          grep -qi 'lang="pl"' /tmp/persone-home.html
+
+          forbidden='SEDLAR|Script\.Casino|Trust Wallet|Cura[cç]ao|USDT|Mastercard|VISA|Apple Pay|Google Pay|wallet address|on-chain|withdraw winnings|deposit cryptocurrency'
+          if grep -Eqi "$forbidden" /tmp/persone-home.html; then
+            echo 'Forbidden legacy branding or real-money copy found in Polish homepage HTML:'
+            grep -Eio "$forbidden" /tmp/persone-home.html | sort -u
+            exit 1
+          fi
+
+          curl -fsS --max-time 5 http://127.0.0.1:3000/royal-arc/index.html >/dev/null
+          curl -fsS --max-time 5 http://127.0.0.1:3000/poker/index.html >/dev/null
+          curl -fsS --max-time 5 http://127.0.0.1:3000/roulette/index.html >/dev/null
+
+          echo 'PORTAL_SMOKE_OK polish=1 royal_arc=200 poker=200 roulette=200'
