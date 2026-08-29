@@ -9,6 +9,7 @@ COPY social-nav.ts /tmp/social-nav.ts
 COPY social-loading.tsx /tmp/social-loading.tsx
 COPY patch-social-messages.mjs /tmp/patch-social-messages.mjs
 COPY siedlar-brand-overlay.mjs /tmp/siedlar-brand-overlay.mjs
+COPY SignupForm.fixed.tsx /tmp/SignupForm.fixed.tsx
 
 RUN git clone https://github.com/scriptcasino/free-casino-script-portal.git . \
     && git checkout "$PORTAL_COMMIT" \
@@ -21,6 +22,7 @@ RUN cp /tmp/social-home.tsx 'app/[locale]/(shell)/page.tsx' \
     && cp /tmp/patch-social-messages.mjs ./patch-social-messages.mjs \
     && node ./patch-social-messages.mjs \
     && node /tmp/siedlar-brand-overlay.mjs \
+    && cp /tmp/SignupForm.fixed.tsx components/auth/SignupForm.tsx \
     && rm ./patch-social-messages.mjs
 
 RUN node -e "const fs=require('fs'); const p='lib/env.ts'; let s=fs.readFileSync(p,'utf8'); const a='NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,'; const b='NEXT_PUBLIC_API_URL: process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL,'; if(!s.includes(a)) throw new Error('API env anchor not found'); fs.writeFileSync(p,s.replace(a,b));"
@@ -33,6 +35,7 @@ ENV NEXT_PUBLIC_SITE_URL=https://casino-turnkey-base-git-casino-turnkey-soci-322
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_REALTIME_ENABLED=false \
     NEXT_PUBLIC_CRASH_REAL_MONEY=false \
+    LARAVEL_FETCH_TIMEOUT_MS=15000 \
     NEXT_TELEMETRY_DISABLED=1
 
 RUN npm ci --include=dev && npm run build
@@ -50,7 +53,8 @@ ENV NODE_ENV=production \
     NEXT_PUBLIC_SUPPORT_EMAIL=support@sedlarcasino.example \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_REALTIME_ENABLED=false \
-    NEXT_PUBLIC_CRASH_REAL_MONEY=false
+    NEXT_PUBLIC_CRASH_REAL_MONEY=false \
+    LARAVEL_FETCH_TIMEOUT_MS=15000
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
