@@ -2,14 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const homePath = path.join(root, 'app/[locale]/(shell)/page.tsx');
-const royalArcPage = path.join(root, 'app/[locale]/games/royal-arc/page.tsx');
-const pokerPage = path.join(root, 'app/[locale]/games/texas-holdem/page.tsx');
-const roulettePage = path.join(root, 'app/[locale]/games/roulette/page.tsx');
+const shellRoot = path.join(root, 'app', '[locale]', '(shell)');
+const homePath = path.join(shellRoot, 'page.tsx');
+const royalArcPage = path.join(shellRoot, 'games', 'royal-arc', 'page.tsx');
+const pokerPage = path.join(shellRoot, 'games', 'texas-holdem', 'page.tsx');
+const roulettePage = path.join(shellRoot, 'games', 'roulette', 'page.tsx');
 
 function writeRedirectIfPresent(filePath, destination, label) {
   if (!fs.existsSync(filePath)) {
-    console.warn(`Static game route not found: ${label}`);
+    console.warn(`Static game route not found: ${label} (${filePath})`);
     return;
   }
   fs.writeFileSync(
