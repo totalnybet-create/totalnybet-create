@@ -64,8 +64,8 @@ fs.writeFileSync(rootLayoutPath, rootLayout);
 const schemaPath = path.join(root, "components", "seo", "SiteSchema.tsx");
 let schema = fs.readFileSync(schemaPath, "utf8");
 schema = schema
-  .replaceAll(`${SITE.url}/en/games/crash`, `${SITE.url}/en/games/royal-arc`)
-  .replaceAll(`${SITE.url}/assets/brand/logo-full.png`, `${SITE.url}/assets/brand/persone-royale.svg`)
+  .replaceAll('${SITE.url}/en/games/crash', '${SITE.url}/en/games/royal-arc')
+  .replaceAll('${SITE.url}/assets/brand/logo-full.png', '${SITE.url}/assets/brand/persone-royale.svg')
   .replace("      parentOrganization: publisherOrganization,\n", "");
 fs.writeFileSync(schemaPath, schema);
 
