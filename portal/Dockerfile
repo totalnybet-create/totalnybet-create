@@ -5,6 +5,8 @@ ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
 ARG GAMES_COMMIT=0ed5afa96275fbf038d65f9cc5f586f227a4486e
 ARG STATIC_FIX_COMMIT=f18abf47af36012256cb803a884225751ea0fa5a
+ARG AUTH_FIX_COMMIT=e869b6f547613f7b56d0e14ab836b5f4a544ca60
+ARG QA_COPY_COMMIT=dadacc2004cfb20034285ac22f1a324ae06c64ac
 ARG CLEANUP_COMMIT=cf366ae0e541062020f51d7a1cee743970fb74a0
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
@@ -77,6 +79,14 @@ RUN wget -qO /tmp/persone-brand-overlay.mjs "https://raw.githubusercontent.com/t
     && node /tmp/game-static-path-fix.mjs \
     && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs /tmp/game-static-path-fix.mjs
 
+RUN wget -qO /tmp/auth-fix-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${AUTH_FIX_COMMIT}/casino/portal-service/auth-fix-overlay.mjs" \
+    && node /tmp/auth-fix-overlay.mjs \
+    && rm /tmp/auth-fix-overlay.mjs
+
+RUN wget -qO /tmp/social-cleanup-qa-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${QA_COPY_COMMIT}/casino/portal-service/social-cleanup-qa-overlay.mjs" \
+    && node /tmp/social-cleanup-qa-overlay.mjs \
+    && rm /tmp/social-cleanup-qa-overlay.mjs
+
 RUN wget -qO /tmp/persone-cleanup-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${CLEANUP_COMMIT}/casino/portal-service/persone-cleanup-overlay.mjs" \
     && node /tmp/persone-cleanup-overlay.mjs \
     && rm /tmp/persone-cleanup-overlay.mjs
@@ -102,6 +112,7 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
+    LARAVEL_FETCH_TIMEOUT_MS=15000 \
     NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
