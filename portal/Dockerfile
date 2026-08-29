@@ -17,6 +17,7 @@ ARG FULL_POLISH_PREFLIGHT_COMMIT=9d9c2054c868fa41fba922f0bf6fd1db8b0bf000
 ARG FULL_POLISH_FINAL_FIX_COMMIT=59b2f427303f622f2248ad82099c688f45ab757d
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
+ARG VISITOR_PUSH_COMMIT=4a0e35745ac1be6ac2b2d80362cd50d3b45fec25
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -124,6 +125,10 @@ RUN wget -qO /tmp/messages.pl.full.json "https://raw.githubusercontent.com/total
 RUN wget -qO /tmp/full-polish-final-fix.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_FINAL_FIX_COMMIT}/casino/portal-service/full-polish-final-fix.mjs" \
     && node /tmp/full-polish-final-fix.mjs \
     && rm /tmp/full-polish-final-fix.mjs
+
+RUN wget -qO /tmp/visitor-push-only-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${VISITOR_PUSH_COMMIT}/casino/portal-service/visitor-push-only-overlay.mjs" \
+    && node /tmp/visitor-push-only-overlay.mjs \
+    && rm /tmp/visitor-push-only-overlay.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
