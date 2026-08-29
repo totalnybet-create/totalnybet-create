@@ -7,6 +7,8 @@ on:
       - release/persone-royale-full-qa-20260829
     paths:
       - '.github/workflows/portal-build-qa.yml'
+      - 'portal/**'
+      - 'casino/portal-service/**'
 
 jobs:
   build-portal:
