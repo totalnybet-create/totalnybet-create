@@ -10,6 +10,7 @@ ARG QA_COPY_COMMIT=dadacc2004cfb20034285ac22f1a324ae06c64ac
 ARG PERSONE_POLISH_COMMIT=3dffa4a7dd8956dd0e258219670812f002ecc06b
 ARG DAILY_BONUS_COMMIT=d3c36a2c78ad868f7f8716c058d70c24dc496552
 ARG FINAL_CLEANUP_COMMIT=9dca115060a3a58856fbc254a27a90556f9ce254
+ARG ROUTE_CONFLICT_FIX_COMMIT=39f524444b220e9c740afa6fe1b48f33f8284315
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -98,6 +99,10 @@ RUN wget -qO /tmp/daily-bonus-overlay.mjs "https://raw.githubusercontent.com/tot
 RUN wget -qO /tmp/persone-final-cleanup-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FINAL_CLEANUP_COMMIT}/casino/portal-service/persone-final-cleanup-overlay.mjs" \
     && node /tmp/persone-final-cleanup-overlay.mjs \
     && rm /tmp/persone-final-cleanup-overlay.mjs
+
+RUN wget -qO /tmp/final-route-conflict-fix.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${ROUTE_CONFLICT_FIX_COMMIT}/casino/portal-service/final-route-conflict-fix.mjs" \
+    && node /tmp/final-route-conflict-fix.mjs \
+    && rm /tmp/final-route-conflict-fix.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
