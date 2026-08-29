@@ -3,16 +3,24 @@ import path from 'node:path';
 
 const root = process.cwd();
 const homePath = path.join(root, 'app/[locale]/(shell)/page.tsx');
+const royalArcPage = path.join(root, 'app/[locale]/games/royal-arc/page.tsx');
 const pokerPage = path.join(root, 'app/[locale]/games/texas-holdem/page.tsx');
 const roulettePage = path.join(root, 'app/[locale]/games/roulette/page.tsx');
 
-if (fs.existsSync(pokerPage)) {
-  fs.writeFileSync(pokerPage, `import { redirect } from 'next/navigation';\nexport default function PokerPage() { redirect('/poker/index.html'); }\n`);
+function writeRedirectIfPresent(filePath, destination, label) {
+  if (!fs.existsSync(filePath)) {
+    console.warn(`Static game route not found: ${label}`);
+    return;
+  }
+  fs.writeFileSync(
+    filePath,
+    `import { redirect } from 'next/navigation';\nexport default function GamePage() { redirect('${destination}'); }\n`,
+  );
 }
 
-if (fs.existsSync(roulettePage)) {
-  fs.writeFileSync(roulettePage, `import { redirect } from 'next/navigation';\nexport default function RoulettePage() { redirect('/roulette/index.html'); }\n`);
-}
+writeRedirectIfPresent(royalArcPage, '/royal-arc/index.html', 'Royal Arc');
+writeRedirectIfPresent(pokerPage, '/poker/index.html', 'Poker');
+writeRedirectIfPresent(roulettePage, '/roulette/index.html', 'Roulette');
 
 if (fs.existsSync(homePath)) {
   let home = fs.readFileSync(homePath, 'utf8');
@@ -23,4 +31,4 @@ if (fs.existsSync(homePath)) {
   fs.writeFileSync(homePath, home);
 }
 
-console.log('Fixed static game paths to bypass locale middleware.');
+console.log('Fixed all game launch routes to bypass locale middleware.');
