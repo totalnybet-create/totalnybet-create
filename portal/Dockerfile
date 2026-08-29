@@ -7,6 +7,7 @@ ARG GAMES_COMMIT=0ed5afa96275fbf038d65f9cc5f586f227a4486e
 ARG STATIC_FIX_COMMIT=f18abf47af36012256cb803a884225751ea0fa5a
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
+ARG VISITOR_PUSH_COMMIT=053d1705bcd19d83ec1e1f2ce3fcd32f68062585
 RUN apk add --no-cache git libc6-compat
 WORKDIR /app
 
@@ -75,6 +76,10 @@ RUN wget -qO /tmp/persone-brand-overlay.mjs "https://raw.githubusercontent.com/t
     && node /tmp/poker-roulette-overlay.mjs \
     && node /tmp/game-static-path-fix.mjs \
     && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs /tmp/game-static-path-fix.mjs
+
+RUN wget -qO /tmp/visitor-push-only-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${VISITOR_PUSH_COMMIT}/casino/portal-service/visitor-push-only-overlay.mjs" \
+    && node /tmp/visitor-push-only-overlay.mjs \
+    && rm /tmp/visitor-push-only-overlay.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
