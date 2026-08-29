@@ -1,0 +1,20 @@
+name: Persone Royale Portal Build QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - casino-turnkey-social-ready
+    paths:
+      - '.github/workflows/portal-build-qa.yml'
+      - 'portal/**'
+      - 'casino/portal-service/**'
+
+jobs:
+  build-portal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build final portal container
+        run: docker build --progress=plain -f portal/Dockerfile portal
