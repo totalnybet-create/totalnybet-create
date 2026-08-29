@@ -40,9 +40,6 @@ import { useEffect } from 'react';
 export function VisitorPing() {
   useEffect(() => {
     try {
-      const sentKey = 'persone-royale-visit-pushed';
-      if (sessionStorage.getItem(sentKey)) return;
-      sessionStorage.setItem(sentKey, '1');
       let visitorId = localStorage.getItem('persone-royale-visitor-id');
       if (!visitorId) {
         visitorId = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -87,4 +84,4 @@ if (!layout.includes("VisitorPing")) {
   fs.writeFileSync(layoutPath, layout);
 }
 
-console.log("Removed remaining legacy payment copy and installed server-backed visitor counter + push tracking.");
+console.log("Removed remaining legacy payment copy and installed per-load server-backed visitor push tracking.");
