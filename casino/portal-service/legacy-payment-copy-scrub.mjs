@@ -24,9 +24,7 @@ if (fs.existsSync(messagesDir)) {
     const file = path.join(messagesDir, name);
     let text = fs.readFileSync(file, "utf8");
     const before = text;
-    for (const [pattern, replacement] of replacements) {
-      text = text.replace(pattern, replacement);
-    }
+    for (const [pattern, replacement] of replacements) text = text.replace(pattern, replacement);
     if (text !== before) fs.writeFileSync(file, text);
   }
 }
@@ -42,10 +40,16 @@ import { useEffect } from 'react';
 export function VisitorPing() {
   useEffect(() => {
     try {
-      const key = 'persone-royale-visit-pushed';
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, '1');
-      const body = JSON.stringify({ path: location.pathname, referrer: document.referrer || '', screen: screen ? screen.width + 'x' + screen.height : '' });
+      const sentKey = 'persone-royale-visit-pushed';
+      if (sessionStorage.getItem(sentKey)) return;
+      sessionStorage.setItem(sentKey, '1');
+      let visitorId = localStorage.getItem('persone-royale-visitor-id');
+      if (!visitorId) {
+        visitorId = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem('persone-royale-visitor-id', visitorId);
+      }
+      const visitKey = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36);
+      const body = JSON.stringify({ path: location.pathname, referrer: document.referrer || '', visitorId, visitKey });
       if (navigator.sendBeacon) navigator.sendBeacon('/api/visit', new Blob([body], { type: 'application/json' }));
       else fetch('/api/visit', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true }).catch(() => {});
     } catch {}
@@ -57,22 +61,21 @@ export function VisitorPing() {
 fs.writeFileSync(path.join(apiDir, "route.ts"), `import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-const TOPIC = process.env.VISITOR_PUSH_TOPIC || 'persone-royale-visits-9f4c7a31d2e64b5aa9c7';
+const VISIT_PUSH_URL = 'https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/visit-push?action=visit';
 function isBot(ua:string){ return /bot|crawler|spider|headless|lighthouse|pagespeed|preview|googlebot|bingbot|yandex|duckduckbot|semrush|ahrefs|uptimerobot/i.test(ua); }
-function device(ua:string){ if(/android/i.test(ua)) return 'Android'; if(/iphone/i.test(ua)) return 'iPhone'; if(/ipad/i.test(ua)) return 'iPad'; if(/windows/i.test(ua)) return 'Windows'; if(/macintosh|mac os/i.test(ua)) return 'Mac'; if(/linux/i.test(ua)) return 'Linux'; return 'Unknown'; }
 export async function POST(req:NextRequest){
   const ua=req.headers.get('user-agent')||'';
   if(!ua||isBot(ua)) return NextResponse.json({ok:true,ignored:true});
   let body:any={}; try{body=await req.json()}catch{}
-  const city=decodeURIComponent(req.headers.get('x-vercel-ip-city')||'').trim();
-  const country=(req.headers.get('x-vercel-ip-country')||'').trim();
-  const region=decodeURIComponent(req.headers.get('x-vercel-ip-country-region')||'').trim();
-  const location=[city,region,country].filter(Boolean).join(', ')||'location unavailable';
-  const now=new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',dateStyle:'short',timeStyle:'medium'}).format(new Date());
-  const text=['Nowe wejście na Persone Royale','📍 '+location,'📱 '+device(ua)+' · '+(body.screen||'screen n/a'),'🌐 '+(body.path||'/'),body.referrer?'↩️ Ref: '+String(body.referrer).slice(0,180):'↩️ Wejście bezpośrednie','🕒 '+now].join('\n');
   try{
-    const r=await fetch('https://ntfy.sh/'+TOPIC,{method:'POST',headers:{'content-type':'text/plain; charset=utf-8','title':'Persone Royale — nowy gość','priority':'high','tags':'bell,chart_with_upwards_trend','click':'https://www.personeroyale.pl/'},body:text,cache:'no-store'});
-    return NextResponse.json({ok:r.ok},{status:r.ok?200:502});
+    const r=await fetch(VISIT_PUSH_URL,{method:'POST',headers:{'content-type':'application/json','user-agent':ua},body:JSON.stringify({
+      path: typeof body.path==='string'?body.path:'/',
+      referrer: typeof body.referrer==='string'?body.referrer:'',
+      visitorId: typeof body.visitorId==='string'?body.visitorId:'',
+      visitKey: typeof body.visitKey==='string'?body.visitKey:''
+    }),cache:'no-store'});
+    const out=await r.json().catch(()=>({ok:r.ok}));
+    return NextResponse.json(out,{status:r.ok?200:502});
   }catch{return NextResponse.json({ok:false},{status:502});}
 }
 `);
@@ -84,4 +87,4 @@ if (!layout.includes("VisitorPing")) {
   fs.writeFileSync(layoutPath, layout);
 }
 
-console.log("Removed remaining legacy payment copy and installed visitor push tracking.");
+console.log("Removed remaining legacy payment copy and installed server-backed visitor counter + push tracking.");
