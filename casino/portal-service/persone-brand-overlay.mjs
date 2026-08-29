@@ -133,9 +133,24 @@ fs.writeFileSync(path.join(loadingDir, 'loading.tsx'), `export default function 
     </main>
   );
 }
-`);
 
-for (const base of ['app', 'components', 'lib']) {
+`);
+}
+
+const replacements = [
+  ['SIEDLAR CASINO ROYALE', 'PERSONE ROYALE CASINO'],
+  ['Siedlar Casino Royale', 'Persone Royale Casino'],
+  ['SEDLAR CASINO', 'PERSONE ROYALE CASINO'],
+  ['Sedlar Casino', 'Persone Royale Casino'],
+  ['sedlar-casino', 'persone-royale'],
+  ['Script.Casino', 'Persone Royale Casino'],
+  ['script.casino', 'personeroyale.pl'],
+  ['CRASHX', 'PERSONE ROYALE CASINO'],
+  ['CrashX', 'PERSONE ROYALE CASINO'],
+  ['crashx.cc', 'personeroyale.pl'],
+];
+
+for (const base of ['app', 'components', 'lib', 'messages']) {
   const dir = path.join(root, base);
   if (!fs.existsSync(dir)) continue;
   const walk = (p) => {
@@ -144,12 +159,8 @@ for (const base of ['app', 'components', 'lib']) {
       if (entry.isDirectory()) walk(fp);
       else if (/\.(tsx?|jsx?|json)$/.test(entry.name)) {
         const text = fs.readFileSync(fp, 'utf8');
-        const next = text
-          .replaceAll('SIEDLAR CASINO ROYALE', 'PERSONE ROYALE CASINO')
-          .replaceAll('Siedlar Casino Royale', 'Persone Royale Casino')
-          .replaceAll('SEDLAR CASINO', 'PERSONE ROYALE CASINO')
-          .replaceAll('Sedlar Casino', 'Persone Royale Casino')
-          .replaceAll('sedlar-casino', 'persone-royale');
+        let next = text;
+        for (const [from, to] of replacements) next = next.replaceAll(from, to);
         if (next !== text) fs.writeFileSync(fp, next);
       }
     }
@@ -157,4 +168,4 @@ for (const base of ['app', 'components', 'lib']) {
   walk(dir);
 }
 
-console.log('Applied Persone Royale Casino branding.');
+console.log('Applied Persone Royale Casino branding across source and locale messages.');
