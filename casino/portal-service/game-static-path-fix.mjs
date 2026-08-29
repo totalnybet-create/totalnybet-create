@@ -3,19 +3,12 @@ import path from 'node:path';
 
 const root = process.cwd();
 const homePath = path.join(root, 'app/[locale]/(shell)/page.tsx');
-const royalPageDir = path.join(root, 'app/[locale]/games/royal-arc');
-const royalPage = path.join(royalPageDir, 'page.tsx');
 const pokerPage = path.join(root, 'app/[locale]/games/texas-holdem/page.tsx');
 const roulettePage = path.join(root, 'app/[locale]/games/roulette/page.tsx');
 
-// Royal Arc uses the shared CHIP wallet, so it must pass through an authenticated
-// portal route before handing off to the static game bundle.
-fs.mkdirSync(royalPageDir, { recursive: true });
-fs.writeFileSync(
-  royalPage,
-  `import { redirect } from 'next/navigation';\nexport default function RoyalArcPage() { redirect('/royal-arc/index.html'); }\n`,
-);
-
+// Royal Arc already has an authenticated locale-aware route created by
+// portal-polish-overlay.mjs at app/[locale]/(shell)/games/royal-arc/page.tsx.
+// Keep that route as the single source of truth and only point the lobby card to it.
 if (fs.existsSync(pokerPage)) {
   fs.writeFileSync(pokerPage, `import { redirect } from 'next/navigation';\nexport default function PokerPage() { redirect('/poker/index.html'); }\n`);
 }
@@ -33,4 +26,4 @@ if (fs.existsSync(homePath)) {
   fs.writeFileSync(homePath, home);
 }
 
-console.log('Fixed game launch paths; Royal Arc now passes through portal auth.');
+console.log('Fixed game launch paths; Royal Arc uses the existing authenticated portal route.');
