@@ -26,6 +26,12 @@
       }
     },
     {
+      "source": "/api/games/poker/health",
+      "destination": {
+        "service": "poker_realtime"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "service": "portal"
