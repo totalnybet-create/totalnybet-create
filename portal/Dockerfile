@@ -14,6 +14,7 @@ ARG DAILY_BONUS_COMMIT=9f390dc29d36a933482c701461ee137ecc67edce
 ARG LEGACY_COPY_SCRUB_COMMIT=f372e8dc7a1e0a11801f5cce9cd1d357f8fe4232
 ARG FULL_POLISH_COMMIT=4bfe93b5796f619e562afe0d78ebb0727e3577c2
 ARG FULL_POLISH_PREFLIGHT_COMMIT=9d9c2054c868fa41fba922f0bf6fd1db8b0bf000
+ARG FULL_POLISH_FINAL_FIX_COMMIT=59b2f427303f622f2248ad82099c688f45ab757d
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -119,6 +120,10 @@ RUN wget -qO /tmp/messages.pl.full.json "https://raw.githubusercontent.com/total
     && wget -qO /tmp/full-polish-safe-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_COMMIT}/casino/portal-service/full-polish-safe-overlay.mjs" \
     && node /tmp/full-polish-safe-overlay.mjs /tmp/messages.pl.full.json \
     && rm /tmp/messages.pl.full.json /tmp/full-polish-safe-overlay.mjs
+
+RUN wget -qO /tmp/full-polish-final-fix.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_FINAL_FIX_COMMIT}/casino/portal-service/full-polish-final-fix.mjs" \
+    && node /tmp/full-polish-final-fix.mjs \
+    && rm /tmp/full-polish-final-fix.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
