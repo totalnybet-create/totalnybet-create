@@ -13,6 +13,7 @@ ARG ROUTE_HARDENING_COMMIT=eb70ff714202f19a0d865777072b1212cdf6d38a
 ARG DAILY_BONUS_COMMIT=9f390dc29d36a933482c701461ee137ecc67edce
 ARG LEGACY_COPY_SCRUB_COMMIT=f372e8dc7a1e0a11801f5cce9cd1d357f8fe4232
 ARG FULL_POLISH_COMMIT=c41c7f0ef0373351701e6fcfffc6c85f205d2b6b
+ARG FULL_POLISH_PREFLIGHT_COMMIT=9d9c2054c868fa41fba922f0bf6fd1db8b0bf000
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -109,6 +110,10 @@ RUN wget -qO /tmp/daily-bonus-overlay.mjs "https://raw.githubusercontent.com/tot
 RUN wget -qO /tmp/legacy-payment-copy-scrub.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${LEGACY_COPY_SCRUB_COMMIT}/casino/portal-service/legacy-payment-copy-scrub.mjs" \
     && node /tmp/legacy-payment-copy-scrub.mjs \
     && rm /tmp/legacy-payment-copy-scrub.mjs
+
+RUN wget -qO /tmp/full-polish-preflight-fix.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_PREFLIGHT_COMMIT}/casino/portal-service/full-polish-preflight-fix.mjs" \
+    && node /tmp/full-polish-preflight-fix.mjs \
+    && rm /tmp/full-polish-preflight-fix.mjs
 
 RUN wget -qO /tmp/messages.pl.full.json "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_COMMIT}/casino/portal-service/messages.pl.full.json" \
     && wget -qO /tmp/full-polish-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FULL_POLISH_COMMIT}/casino/portal-service/full-polish-overlay.mjs" \
