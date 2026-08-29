@@ -7,7 +7,7 @@
       "root": "portal/",
       "entrypoint": "Dockerfile"
     },
-    "pokerRealtime": {
+    "poker_realtime": {
       "root": "poker-realtime/",
       "framework": "express",
       "entrypoint": "server.js"
@@ -22,7 +22,7 @@
     {
       "source": "/api/games/poker/ws",
       "destination": {
-        "service": "pokerRealtime"
+        "service": "poker_realtime"
       }
     },
     {
