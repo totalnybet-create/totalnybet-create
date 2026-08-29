@@ -11,6 +11,7 @@ ARG PERSONE_POLISH_COMMIT=3dffa4a7dd8956dd0e258219670812f002ecc06b
 ARG FINAL_CLEANUP_COMMIT=9dca115060a3a58856fbc254a27a90556f9ce254
 ARG ROUTE_HARDENING_COMMIT=eb70ff714202f19a0d865777072b1212cdf6d38a
 ARG DAILY_BONUS_COMMIT=9f390dc29d36a933482c701461ee137ecc67edce
+ARG LEGACY_COPY_SCRUB_COMMIT=f372e8dc7a1e0a11801f5cce9cd1d357f8fe4232
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -103,6 +104,10 @@ RUN wget -qO /tmp/persone-route-hardening-overlay.mjs "https://raw.githubusercon
 RUN wget -qO /tmp/daily-bonus-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${DAILY_BONUS_COMMIT}/casino/portal-service/daily-bonus-overlay.mjs" \
     && node /tmp/daily-bonus-overlay.mjs \
     && rm /tmp/daily-bonus-overlay.mjs
+
+RUN wget -qO /tmp/legacy-payment-copy-scrub.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${LEGACY_COPY_SCRUB_COMMIT}/casino/portal-service/legacy-payment-copy-scrub.mjs" \
+    && node /tmp/legacy-payment-copy-scrub.mjs \
+    && rm /tmp/legacy-payment-copy-scrub.mjs
 
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
