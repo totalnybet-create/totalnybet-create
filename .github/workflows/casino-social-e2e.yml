@@ -71,3 +71,44 @@ jobs:
           python -c 'import json,sys; d=json.load(sys.stdin); assert d["ok"] is True' <<<"$logout"
 
           echo "E2E_OK username=$USERNAME start_balance_minor=$START daily_bonus_minor=50000"
+
+      - name: Verify live Poker WebSocket handshake
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/persone-ws && cd /tmp/persone-ws
+          npm init -y >/dev/null 2>&1
+          npm install ws@8 --no-save >/dev/null 2>&1
+          node <<'NODE'
+          const WebSocket = require('ws');
+          let opened = false;
+          const ws = new WebSocket('wss://www.personeroyale.pl/api/games/poker/ws', {
+            origin: 'https://www.personeroyale.pl',
+            handshakeTimeout: 15000,
+          });
+          const timer = setTimeout(() => {
+            console.error('POKER_WS_TIMEOUT');
+            process.exit(1);
+          }, 20000);
+          ws.on('open', () => {
+            opened = true;
+            console.log('POKER_WS_OPEN');
+            ws.close(1000, 'qa');
+          });
+          ws.on('unexpected-response', (_req, res) => {
+            console.error(`POKER_WS_HTTP_${res.statusCode}`);
+            clearTimeout(timer);
+            process.exit(1);
+          });
+          ws.on('error', (err) => {
+            console.error('POKER_WS_ERROR', err.message);
+            clearTimeout(timer);
+            process.exit(1);
+          });
+          ws.on('close', (code) => {
+            clearTimeout(timer);
+            if (!opened) process.exit(1);
+            console.log(`POKER_WS_CLOSED_${code}`);
+            process.exit(0);
+          });
+          NODE
