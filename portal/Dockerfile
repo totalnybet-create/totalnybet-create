@@ -5,6 +5,7 @@ ARG ROYAL_OVERLAY_COMMIT=401168fd037bae1f3a7b5eefc7770e049bf7a964
 ARG POLISH_COMMIT=a1249ea7b65d99a177b2d25b3a5f08d10cfd3d5a
 ARG GAMES_COMMIT=0ed5afa96275fbf038d65f9cc5f586f227a4486e
 ARG STATIC_FIX_COMMIT=f18abf47af36012256cb803a884225751ea0fa5a
+ARG AUTH_FIX_COMMIT=eabe21be2b2958763d6f453e01c1408aa432a941
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
 RUN apk add --no-cache git libc6-compat
@@ -76,6 +77,8 @@ RUN wget -qO /tmp/persone-brand-overlay.mjs "https://raw.githubusercontent.com/t
     && node /tmp/game-static-path-fix.mjs \
     && rm /tmp/persone-brand-overlay.mjs /tmp/poker-roulette-overlay.mjs /tmp/game-static-path-fix.mjs
 
+RUN wget -qO components/auth/SignupForm.tsx "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${AUTH_FIX_COMMIT}/casino/portal-service/SignupForm.fixed.tsx"
+
 ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_SITE_NAME="PERSONE ROYALE CASINO" \
     NEXT_PUBLIC_SITE_TAGLINE="Social Casino — Play Money" \
@@ -85,6 +88,7 @@ ENV NEXT_PUBLIC_SITE_URL=https://personeroyale.pl \
     NEXT_PUBLIC_TENANT_SLUG=persone-royale \
     NEXT_PUBLIC_REALTIME_ENABLED=true \
     NEXT_PUBLIC_CRASH_REAL_MONEY=false \
+    LARAVEL_FETCH_TIMEOUT_MS=15000 \
     NEXT_TELEMETRY_DISABLED=1
 
 RUN npm ci --include=dev \
@@ -105,7 +109,8 @@ ENV NODE_ENV=production \
     NEXT_PUBLIC_API_URL=https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api \
     NEXT_PUBLIC_TENANT_SLUG=persone-royale \
     NEXT_PUBLIC_REALTIME_ENABLED=true \
-    NEXT_PUBLIC_CRASH_REAL_MONEY=false
+    NEXT_PUBLIC_CRASH_REAL_MONEY=false \
+    LARAVEL_FETCH_TIMEOUT_MS=15000
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
