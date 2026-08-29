@@ -1,23 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const root = process.cwd();
-const messagesDir = path.join(root, "messages");
+const appDir = "/app/apps/web/app";
+const messagesDir = "/app/apps/web/messages";
+const componentDir = path.join(appDir, "components");
+const apiDir = path.join(appDir, "api", "visit");
 
-const replacements = [
-  [/USDT/gi, "virtual CHIP"],
-  [/Trust Wallet/gi, "account"],
-  [/Cura[cç]ao/gi, "social-casino"],
-  [/Mastercard/gi, "virtual-chip balance"],
-  [/\bVISA\b/gi, "virtual-chip balance"],
-  [/Apple Pay/gi, "virtual-chip balance"],
-  [/Google Pay/gi, "virtual-chip balance"],
-  [/wallet address/gi, "account balance"],
-  [/on-chain/gi, "server-side"],
-  [/withdraw winnings/gi, "view activity"],
-  [/deposit cryptocurrency/gi, "virtual-chip balance"],
-];
-
+const replacements = [];
 if (fs.existsSync(messagesDir)) {
   for (const name of fs.readdirSync(messagesDir)) {
     if (!name.endsWith(".json")) continue;
@@ -29,9 +18,6 @@ if (fs.existsSync(messagesDir)) {
   }
 }
 
-const componentDir = path.join(root, "components/analytics");
-const apiDir = path.join(root, "app/api/visit");
-const layoutPath = path.join(root, "app/layout.tsx");
 fs.mkdirSync(componentDir, { recursive: true });
 fs.mkdirSync(apiDir, { recursive: true });
 
@@ -77,11 +63,14 @@ export async function POST(req:NextRequest){
 }
 `);
 
-let layout = fs.readFileSync(layoutPath, "utf8");
-if (!layout.includes("VisitorPing")) {
-  layout = layout.replace('import "./globals.css";', 'import "./globals.css";\nimport { VisitorPing } from "@/components/analytics/VisitorPing";');
-  layout = layout.replace('<body suppressHydrationWarning>{children}</body>', '<body suppressHydrationWarning><VisitorPing />{children}</body>');
-  fs.writeFileSync(layoutPath, layout);
+const layoutPath = path.join(appDir, "[locale]", "layout.tsx");
+if (fs.existsSync(layoutPath)) {
+  let layout = fs.readFileSync(layoutPath, "utf8");
+  if (!layout.includes("VisitorPing")) {
+    layout = `import { VisitorPing } from '../components/VisitorPing';\n` + layout;
+    layout = layout.replace(/(<body[^>]*>)/, `$1<VisitorPing />`);
+    fs.writeFileSync(layoutPath, layout);
+  }
 }
 
 console.log("Removed remaining legacy payment copy and installed per-load server-backed visitor push tracking.");
