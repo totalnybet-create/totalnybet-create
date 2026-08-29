@@ -20,6 +20,12 @@
   ],
   "rewrites": [
     {
+      "source": "/api/games/poker/health",
+      "destination": {
+        "service": "poker_realtime"
+      }
+    },
+    {
       "source": "/api/games/poker/ws",
       "destination": {
         "service": "poker_realtime"
