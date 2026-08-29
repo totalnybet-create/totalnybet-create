@@ -47,7 +47,11 @@ const serverPath = path.join(targetRoot, 'server.js');
 let server = await fs.readFile(serverPath, 'utf8');
 server = server.replace(
   "const app = express();\napp.use(cors());",
-  "const app = express();\nconst allowedOrigins = new Set(['https://personeroyale.pl', 'https://www.personeroyale.pl']);\napp.use(cors({ origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) return callback(null, true); callback(new Error('Origin not allowed')); } }));\napp.get('/health', (_req, res) => res.status(200).json({ ok: true, service: 'persone-royale-poker' }));",
+  "const app = express();\nconst allowedOrigins = new Set(['https://personeroyale.pl', 'https://www.personeroyale.pl']);\napp.use(cors({ origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) return callback(null, true); callback(new Error('Origin not allowed')); } }));\nconst healthPayload = { ok: true, service: 'persone-royale-poker', websocket: true };\napp.get('/health', (_req, res) => res.status(200).json(healthPayload));\napp.get('/api/games/poker/health', (_req, res) => res.status(200).json(healthPayload));\napp.get('/api/games/poker/ws', (_req, res) => res.status(426).json({ ...healthPayload, upgrade: 'required' }));",
+);
+server = server.replace(
+  "wss.on('connection', (ws) => {",
+  "wss.on('connection', (ws, request) => {\n  const origin = request?.headers?.origin;\n  if (origin && !allowedOrigins.has(origin)) {\n    ws.close(1008, 'Origin not allowed');\n    return;\n  }",
 );
 server = server.replace(
   /const PORT = process\.env\.PORT \|\| 3000;[\s\S]*$/,
