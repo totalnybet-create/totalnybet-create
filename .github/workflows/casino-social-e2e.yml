@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - casino-turnkey-social-ready
+      - qa/persone-royale-integrated-20260829
     paths:
       - '.github/workflows/casino-social-e2e.yml'
 
@@ -13,42 +14,67 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Register, verify wallet, spin and block withdrawal
+      - name: Verify Persone config, register, wallet, bonus, spin and play-money guards
         shell: bash
         env:
           API: https://wmcgybrgnxeghvryqitt.supabase.co/functions/v1/casino-api
         run: |
           set -euo pipefail
-          USERNAME="ci_$(date +%s)_${RANDOM}"
-          PASSWORD="Sedlar-CI-${RANDOM}-A9!"
+          USERNAME="qa_$(date +%s)_${RANDOM}"
+          PASSWORD="Persone-QA-${RANDOM}-A9!"
+
+          health="$(curl -fsS "$API/api/v1/health")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["ok"] is True; assert d["mode"] == "play-money"; assert d["version"] >= 3' <<<"$health"
+
+          config="$(curl -fsS "$API/api/v1/site/config")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["tenant"]["slug"] == "persone-royale"; assert d["tenant"]["name"] == "PERSONE ROYALE CASINO"; assert d["currency"] == "CHIP"; assert d["features"]["real_money"] is False; assert d["features"]["deposits"] is False; assert d["features"]["withdrawals"] is False' <<<"$config"
 
           register="$(curl -fsS -X POST "$API/api/v1/auth/register" \
             -H 'content-type: application/json' \
             --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\",\"password_confirmation\":\"$PASSWORD\"}")"
 
-          TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); print(d["token"])' <<<"$register")"
-          START="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d["user"]["wallet"]["balance_minor"] == 250000; print(d["user"]["wallet"]["balance_minor"])' <<<"$register")"
+          TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); assert d["user"]["tenant_id"] == "persone-royale"; print(d["token"])' <<<"$register")"
+          START="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d["user"]["wallet"]["currency"] == "CHIP"; assert d["user"]["wallet"]["balance_minor"] == 250000; print(d["user"]["wallet"]["balance_minor"])' <<<"$register")"
           test "$START" = "250000"
 
           wallet="$(curl -fsS "$API/api/v1/wallet" -H "authorization: Bearer $TOKEN")"
           python -c 'import json,sys; d=json.load(sys.stdin); assert d["wallet"]["currency"] == "CHIP"; assert d["wallet"]["balance_minor"] == 250000' <<<"$wallet"
 
+          me="$(curl -fsS "$API/api/v1/auth/me" -H "authorization: Bearer $TOKEN")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["user"]["tenant_id"] == "persone-royale"; assert d["user"]["wallet"]["balance_minor"] == 250000' <<<"$me"
+
+          tx="$(curl -fsS "$API/api/v1/wallet/transactions?per_page=10" -H "authorization: Bearer $TOKEN")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert any(x["type"] == "welcome_chips" and x["amount_minor"] == 250000 for x in d["data"])' <<<"$tx"
+
+          summary="$(curl -fsS "$API/api/v1/profile/summary" -H "authorization: Bearer $TOKEN")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["totals"]["deposits_minor"] == 0; assert d["totals"]["withdrawals_minor"] == 0; assert d["totals"]["bonuses_minor"] >= 250000' <<<"$summary"
+
           login="$(curl -fsS -X POST "$API/api/v1/auth/login" \
             -H 'content-type: application/json' \
             --data "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}")"
-          LOGIN_TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); print(d["token"])' <<<"$login")"
+          LOGIN_TOKEN="$(python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("token"); assert d["user"]["tenant_id"] == "persone-royale"; print(d["token"])' <<<"$login")"
 
           spin="$(curl -fsS -X POST "$API/api/v1/games/royal-arc/spin" \
             -H 'content-type: application/json' \
             -H "authorization: Bearer $LOGIN_TOKEN" \
             --data '{"bet_minor":100,"free_spin":false}')"
-          python -c 'import json,sys; d=json.load(sys.stdin); assert d["game"] == "royal_arc"; assert d["play_money"] is True; assert len(d["matrix"]) == 5; assert isinstance(d["balance_minor"], int)' <<<"$spin"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["game"] == "royal_arc"; assert d["play_money"] is True; assert len(d["matrix"]) == 5; assert isinstance(d["balance_minor"], int); assert d["balance_minor"] >= 0' <<<"$spin"
 
-          code="$(curl -sS -o /tmp/withdraw.json -w '%{http_code}' -X POST "$API/api/v1/wallet/withdraw" \
+          withdraw_code="$(curl -sS -o /tmp/withdraw.json -w '%{http_code}' -X POST "$API/api/v1/wallet/withdraw" \
             -H 'content-type: application/json' \
             -H "authorization: Bearer $LOGIN_TOKEN" \
             --data '{"amount":1}')"
-          test "$code" = "410"
+          test "$withdraw_code" = "410"
           python -c 'import json; d=json.load(open("/tmp/withdraw.json")); assert d["code"] == "PLAY_MONEY_ONLY"'
+
+          reward_code="$(curl -sS -o /tmp/reward.json -w '%{http_code}' -X POST "$API/api/v1/wallet/rewarded-ad" \
+            -H 'content-type: application/json' \
+            -H "authorization: Bearer $LOGIN_TOKEN" \
+            --data '{}')"
+          test "$reward_code" = "503"
+          python -c 'import json; d=json.load(open("/tmp/reward.json")); assert d["code"] == "REWARD_PROVIDER_NOT_CONFIGURED"'
+
+          logout="$(curl -fsS -X POST "$API/api/v1/auth/logout" -H "authorization: Bearer $LOGIN_TOKEN")"
+          python -c 'import json,sys; d=json.load(sys.stdin); assert d["ok"] is True' <<<"$logout"
 
           echo "E2E_OK username=$USERNAME start_balance_minor=$START"
