@@ -9,6 +9,7 @@ ARG AUTH_FIX_COMMIT=eabe21be2b2958763d6f453e01c1408aa432a941
 ARG QA_COPY_COMMIT=dadacc2004cfb20034285ac22f1a324ae06c64ac
 ARG PERSONE_POLISH_COMMIT=3dffa4a7dd8956dd0e258219670812f002ecc06b
 ARG FINAL_CLEANUP_COMMIT=9dca115060a3a58856fbc254a27a90556f9ce254
+ARG ROUTE_HARDENING_COMMIT=eb70ff714202f19a0d865777072b1212cdf6d38a
 ARG DAILY_BONUS_COMMIT=9f390dc29d36a933482c701461ee137ecc67edce
 ARG ELITE_POKER_COMMIT=4e38645897501badc279d62e2b18de5021617c37
 ARG ROULETTE_COMMIT=4247df162d23fda53fddfb2a70d751e25f531a2e
@@ -94,6 +95,10 @@ RUN wget -qO /tmp/persone-polish-overlay.mjs "https://raw.githubusercontent.com/
 RUN wget -qO /tmp/persone-final-cleanup-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${FINAL_CLEANUP_COMMIT}/casino/portal-service/persone-final-cleanup-overlay.mjs" \
     && node /tmp/persone-final-cleanup-overlay.mjs \
     && rm /tmp/persone-final-cleanup-overlay.mjs
+
+RUN wget -qO /tmp/persone-route-hardening-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${ROUTE_HARDENING_COMMIT}/casino/portal-service/persone-route-hardening-overlay.mjs" \
+    && node /tmp/persone-route-hardening-overlay.mjs \
+    && rm /tmp/persone-route-hardening-overlay.mjs
 
 RUN wget -qO /tmp/daily-bonus-overlay.mjs "https://raw.githubusercontent.com/totalnybet-create/totalnybet-create/${DAILY_BONUS_COMMIT}/casino/portal-service/daily-bonus-overlay.mjs" \
     && node /tmp/daily-bonus-overlay.mjs \
